@@ -3,7 +3,11 @@ import 'package:carpool_app/authentication/login_screen.dart';
 import 'package:carpool_app/authentication/signup_screen.dart';
 import 'package:carpool_app/methods/common_methods.dart';
 
-void main() {
+Future<void> main() async
+{
+  WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 
@@ -16,7 +20,6 @@ class MyApp extends StatelessWidget
   {
     return MaterialApp(
       title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
       ),
@@ -24,6 +27,7 @@ class MyApp extends StatelessWidget
     );
   }
 }
+
 
 
 

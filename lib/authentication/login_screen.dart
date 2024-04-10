@@ -1,27 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:carpool_app/authentication/signup_screen.dart';
+import 'package:carpool_app/global/global_var.dart';
 import 'package:carpool_app/methods/common_methods.dart';
 import 'package:carpool_app/pages/home_page.dart';
+import 'package:carpool_app/widgets/loading_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController userNameTextEditingController = TextEditingController();
-  TextEditingController userPhoneTextEditingController = TextEditingController();
+
+
+class _LoginScreenState extends State<LoginScreen>
+{
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController passwordTextEditingController = TextEditingController();
-  // CommonMethods cMethods = CommonMethods();
+  CommonMethods cMethods = CommonMethods();
 
-  // checkIfNetworkIsAvailable()
-  // {
-  //   cMethods.checkConnectivity(context);
-  // }
 
+
+  checkIfNetworkIsAvailable()
+  {
+    cMethods.checkConnectivity(context);
+
+    signInFormValidation();
+  }
+
+  signInFormValidation()
+  {
+
+    if(!emailTextEditingController.text.contains("@"))
+    {
+      cMethods.displaySnackBar("please write valid email.", context);
+    }
+    else if(passwordTextEditingController.text.trim().length < 5)
+    {
+      cMethods.displaySnackBar("your password must be atleast 6 or more characters.", context);
+    }
+    else
+    {
+      signInUser();
+    }
+  }
+
+  signInUser() async
+  {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => LoadingDialog(messageText: "Allowing you to Login..."),
+    );
+
+
+    if(!context.mounted) return;
+    Navigator.pop(context);
+
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,40 +103,54 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 22),
-                    ElevatedButton(
-                      onPressed: () {
-                        // checkIfNetworkIsAvailable();
-                        // Check login credentials and if successful, navigate to home page
-                        bool loggedIn = true; // Replace with actual login logic
 
-                        if (loggedIn) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomePage()),
-                          );
-                        }
+                    ElevatedButton(
+                      onPressed: ()  {
+                        checkIfNetworkIsAvailable();
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomePage()),
+                        );
+
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 80, vertical: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 10),
                       ),
                       child: const Text("Log In"),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => SignUpScreen()));
-                },
-                child: const Text(
-                  "Don\'t have an Account? Sign Up Here",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
+               const SizedBox(height: 12),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     // Check if there is internet connectivity
+              //     bool isConnected = await checkIfNetworkIsAvailable();
+              //
+              //     if (isConnected) {
+              //       // If there is internet, navigate to home page
+              //       Navigator.pushReplacement(
+              //         context,
+              //         MaterialPageRoute(builder: (context) => HomePage()),
+              //       );
+              //     } else {
+              //       // Show no internet connection error message
+              //       ScaffoldMessenger.of(context).showSnackBar(
+              //         SnackBar(
+              //           content: Text('No internet connection'),
+              //         ),
+              //       );
+              //     }
+              //   },
+              //   style: ElevatedButton.styleFrom(
+              //     backgroundColor: Colors.purple,
+              //     padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 10),
+              //   ),
+              //   child: const Text("Log In"),
+              // ),
+
+
             ],
           ),
         ),

@@ -16,12 +16,12 @@ class _SignUpScreenState extends State<SignUpScreen>
   TextEditingController userPhoneTextEditingController = TextEditingController();
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController passwordTextEditingController = TextEditingController();
-  // CommonMethods cMethods = CommonMethods();
+  CommonMethods cMethods = CommonMethods();
 
-  // checkIfNetworkIsAvailable()
-  // {
-  //   cMethods.checkConnectivity(context);
-  // }
+  checkIfNetworkIsAvailable()
+  {
+    cMethods.checkConnectivity(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,13 +107,17 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ),
               ),
               const SizedBox(height: 12),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+              ElevatedButton(
+                onPressed: ()
+                {
+                  checkIfNetworkIsAvailable();
                 },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 10)
+                ),
                 child: const Text(
-                  "Already have an Account? Login Here",
-                  style: TextStyle(color: Colors.grey),
+                    "Sign Up"
                 ),
               ),
             ],
