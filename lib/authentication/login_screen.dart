@@ -123,32 +123,32 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
                const SizedBox(height: 12),
-              // ElevatedButton(
-              //   onPressed: () async {
-              //     // Check if there is internet connectivity
-              //     bool isConnected = await checkIfNetworkIsAvailable();
-              //
-              //     if (isConnected) {
-              //       // If there is internet, navigate to home page
-              //       Navigator.pushReplacement(
-              //         context,
-              //         MaterialPageRoute(builder: (context) => HomePage()),
-              //       );
-              //     } else {
-              //       // Show no internet connection error message
-              //       ScaffoldMessenger.of(context).showSnackBar(
-              //         SnackBar(
-              //           content: Text('No internet connection'),
-              //         ),
-              //       );
-              //     }
-              //   },
-              //   style: ElevatedButton.styleFrom(
-              //     backgroundColor: Colors.purple,
-              //     padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 10),
-              //   ),
-              //   child: const Text("Log In"),
-              // ),
+              ElevatedButton(
+                onPressed: () async {
+                  // Check if there is internet connectivity
+                  bool isConnected = await checkIfNetworkIsAvailable();
+
+                  if (isConnected) {
+                    // If there is internet, navigate to home page
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                    );
+                  } else {
+                    // Show no internet connection error message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('No internet connection'),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 10),
+                ),
+                child: const Text("Log In"),
+              ),
 
 
             ],
