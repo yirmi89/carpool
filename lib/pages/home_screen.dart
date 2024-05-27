@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:carpool/authentication/login_screen.dart';
-
 import 'create_group.dart';
 import 'join_group.dart';
 import 'my_ride_details.dart';

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:carpool/pages/home_screen.dart';
 import 'signup_screen.dart';
-=======
-import 'package:carpool/authentication/signup_screen.dart';
->>>>>>> origin/main
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,20 +9,12 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-<<<<<<< HEAD
 class _LoginScreenState extends State<LoginScreen> {
-=======
-class _LoginScreenState extends State<LoginScreen>
-{
-  TextEditingController userNameTextEditingController = TextEditingController();
-  TextEditingController userPhoneTextEditingController = TextEditingController();
->>>>>>> origin/main
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController passwordTextEditingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
 
@@ -49,8 +37,7 @@ class _LoginScreenState extends State<LoginScreen>
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'Comme', // Set font family
-                        color: Color(0xFF6EE2F5), // Set color
+                        color: Colors.white, // Set color
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.03),
@@ -70,14 +57,13 @@ class _LoginScreenState extends State<LoginScreen>
                                 labelText: "User Email",
                                 labelStyle: TextStyle(
                                   fontSize: 14,
-                                  fontFamily: 'Comme', // Set font family
-                                  color: Color(0xFF6EE2F5), // Set color
+                                  //color: Color(0xFF6EE2F5), // Set color
+                                  color: Colors.white
                                 ),
                               ),
                               style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 15,
-                                fontFamily: 'Comme', // Set font family
                               ),
                             ),
                             SizedBox(height: screenHeight * 0.02),
@@ -89,14 +75,14 @@ class _LoginScreenState extends State<LoginScreen>
                                 labelText: "User Password",
                                 labelStyle: TextStyle(
                                   fontSize: 14,
-                                  fontFamily: 'Comme', // Set font family
-                                  color: Color(0xFF6EE2F5), // Set color
+                                  //color: Color(0xFF6EE2F5), // Set color
+                                    color: Colors.white
                                 ),
                               ),
                               style: const TextStyle(
-                                color: Colors.grey,
+                                color: Colors.white,
                                 fontSize: 15,
-                                fontFamily: 'Comme', // Set font family
+                            //    fontFamily: 'Comme', // Set font family
                               ),
                             ),
                             SizedBox(height: screenHeight * 0.04),
@@ -109,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.purple,
+                                  backgroundColor: const Color(0xFFFF7E82),
                                   padding: EdgeInsets.symmetric(
                                       horizontal: screenWidth * 0.2,
                                       vertical: screenHeight * 0.02)),
@@ -117,7 +103,8 @@ class _LoginScreenState extends State<LoginScreen>
                                 "Login",
                                 style: TextStyle(
                                   fontSize: 18,
-                                  fontFamily: 'Comme', // Set font family
+                                 // fontFamily: 'Comme', // Set font family
+                                  color: Colors.white
                                 ),
                               ),
                             ),
@@ -137,9 +124,9 @@ class _LoginScreenState extends State<LoginScreen>
                       child: const Text(
                         "Don\'t have an Account? Register Here",
                         style: TextStyle(
-                          color: Colors.grey,
+                          color: Colors.white,
                           fontSize: 16,
-                          fontFamily: 'Comme', // Set font family
+                          //fontFamily: 'Comme', // Set font family
                         //  color: Color(0xFF6EE2F5), // Set color
                         ),
                       ),
@@ -148,103 +135,6 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
             ),
-=======
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-
-              Image.asset(
-                  "assets/images/logo.png"
-              ),
-
-              const Text(
-                "Login as a User",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              //text fields + button
-              Padding(
-                padding: const EdgeInsets.all(22),
-                child: Column(
-                  children: [
-
-                    TextField(
-                      controller: emailTextEditingController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: "User Email",
-                        labelStyle: TextStyle(
-                          fontSize: 14,
-                        ),
-                      ),
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 15,
-                      ),
-                    ),
-
-                    const SizedBox(height: 22,),
-
-                    TextField(
-                      controller: passwordTextEditingController,
-                      obscureText: true,
-                      keyboardType: TextInputType.text,
-                      decoration: const InputDecoration(
-                        labelText: "User Password",
-                        labelStyle: TextStyle(
-                          fontSize: 14,
-                        ),
-                      ),
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 15,
-                      ),
-                    ),
-
-                    const SizedBox(height: 32,),
-
-                    ElevatedButton(
-                      onPressed: ()
-                      {
-                        // checkIfNetworkIsAvailable();
-                      },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 10)
-                      ),
-                      child: const Text(
-                          "Login"
-                      ),
-                    ),
-
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 12,),
-
-              //textbutton
-              TextButton(
-                onPressed: ()
-                {
-                  Navigator.push(context, MaterialPageRoute(builder: (c)=> SignUpScreen()));
-                },
-                child: const Text(
-                  "Don\'t have an Account? Register Here",
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-
-            ],
->>>>>>> origin/main
           ),
         ),
       ),
