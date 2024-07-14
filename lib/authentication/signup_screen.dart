@@ -1,6 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:carpool/authentication/login_screen.dart';
+import 'package:carpool/methods/common_methods.dart';
 import 'package:carpool/pages/home_screen.dart';
-import 'login_screen.dart';
+import 'package:carpool/widgets/loading_dialog.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -10,171 +14,269 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  TextEditingController userNameTextEditingController = TextEditingController();
-  TextEditingController userPhoneTextEditingController = TextEditingController();
-  TextEditingController emailTextEditingController = TextEditingController();
-  TextEditingController passwordTextEditingController = TextEditingController();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController numChildrenController = TextEditingController();
+  final TextEditingController daysAvailableController = TextEditingController();
+  final TextEditingController destinationController = TextEditingController();
+  final TextEditingController residenceController = TextEditingController();
+  final TextEditingController vehicleInfoController = TextEditingController();
+  final CommonMethods cMethods = CommonMethods();
+
+  void checkIfNetworkIsAvailable() async {
+    bool isConnected = await cMethods.checkConnectivity(context);
+    if (isConnected) {
+      if (signUpFormValidation()) {
+        registerNewUser();
+      }
+    }
+  }
+
+  bool signUpFormValidation() {
+    if (firstNameController.text.trim().length < 3) {
+      cMethods.displaySnackBar("Your first name must be at least 3 characters.", context);
+      return false;
+    } else if (lastNameController.text.trim().length < 3) {
+      cMethods.displaySnackBar("Your last name must be at least 3 characters.", context);
+      return false;
+    } else if (!emailController.text.contains("@")) {
+      cMethods.displaySnackBar("Please write a valid email.", context);
+      return false;
+    } else if (passwordController.text.trim().length < 6) {
+      cMethods.displaySnackBar("Your password must be at least 6 characters.", context);
+      return false;
+    }
+    return true;
+  }
+
+  void registerNewUser() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => const LoadingDialog(messageText: "Registering your account..."),
+    );
+
+    try {
+      final User? userFirebase = (await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      )).user;
+
+      if (userFirebase != null) {
+        DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("users").child(userFirebase.uid);
+        Map<String, String> userDataMap = {
+          "first_name": firstNameController.text.trim(),
+          "last_name": lastNameController.text.trim(),
+          "email": emailController.text.trim(),
+          "password": passwordController.text.trim(),
+          "num_children": numChildrenController.text.trim(),
+          "days_available": daysAvailableController.text.trim(),
+          "destination": destinationController.text.trim(),
+          "residence": residenceController.text.trim(),
+          "vehicle_info": vehicleInfoController.text.trim(),
+          "blockStatus": "no",
+        };
+        usersRef.set(userDataMap);
+
+        Navigator.push(context, MaterialPageRoute(builder: (c) => const HomeScreen()));
+      }
+    } catch (error) {
+      cMethods.displaySnackBar(error.toString(), context);
+    } finally {
+      if (!context.mounted) return;
+      Navigator.pop(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double screenWidth = MediaQuery.of(context).size.width;
+    const Color carColor = Color(0xFF333F48); // Dark Gray
 
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: screenHeight,
-            ),
-            child: IntrinsicHeight(
-              child: Padding(
-                padding: EdgeInsets.all(screenWidth * 0.05),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: screenHeight * 0.03),
-                    const Text(
-                      "Create a User\'s Account",
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        //color: Color(0xFF6EE2F5), // Set color
-                         color: Colors.white
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-                    Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(screenWidth * 0.05),
-                        child: Column(
-                          children: [
-                            TextField(
-                              controller: userNameTextEditingController,
-                              keyboardType: TextInputType.text,
-                              decoration: const InputDecoration(
-                                labelText: "User Name",
-                                labelStyle: TextStyle(
-                                  fontSize: 14,
-                                  //color: Color(0xFF6EE2F5), // Set color
-                                    color: Colors.white
-                                ),
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.02),
-                            TextField(
-                              controller: userPhoneTextEditingController,
-                              keyboardType: TextInputType.text,
-                              decoration: const InputDecoration(
-                                labelText: "User Phone",
-                                labelStyle: TextStyle(
-                                  fontSize: 14,
-                                  //color: Color(0xFF6EE2F5), // Set color
-                                    color: Colors.white
-                                ),
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.02),
-                            TextField(
-                              controller: emailTextEditingController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                labelText: "User Email",
-                                labelStyle: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white
-                                ),
-                              ),
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 15,
-                                //fontFamily: 'Comme', // Set font family
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.02),
-                            TextField(
-                              controller: passwordTextEditingController,
-                              obscureText: true,
-                              keyboardType: TextInputType.text,
-                              decoration: const InputDecoration(
-                                labelText: "User Password",
-                                labelStyle: TextStyle(
-                                  fontSize: 14,
-                           //       fontFamily: 'Comme', // Set font family
-                               // color: Color(0xFF6EE2F5), // Set color
-                                  color: Colors.white
-                                ),
-                              ),
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 15,
-                             //   fontFamily: 'Comme', // Set font family
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.04),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const HomeScreen()),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFF7E82),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: screenWidth * 0.2,
-                                      vertical: screenHeight * 0.02)),
-                              child: const Text(
-                                "Sign Up",
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.white
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (c) => const LoginScreen()),
-                        );
-                      },
-                      child: const Text(
-                        "Already have an Account? Login Here",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                       //   fontFamily: 'Comme', // Set font family
-                     //     color: Color(0xFF6EE2F5), // Set color
-                        ),
-                      ),
-                    ),
-                  ],
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 50),
+              Center(
+                child: Image.asset(
+                  'assets/images/carpool_logo.png', // Update with your image path
+                  width: 345,
+                  height: 243,
                 ),
               ),
-            ),
+              const SizedBox(height: 40),
+              const Text(
+                'Sign up',
+                style: TextStyle(
+                  fontFamily: 'Segoe UI',
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF263A6D),
+                ),
+              ),
+              const SizedBox(height: 40),
+              _buildTextField(
+                context,
+                controller: firstNameController,
+                icon: Icons.person,
+                hintText: 'First Name',
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                context,
+                controller: lastNameController,
+                icon: Icons.person,
+                hintText: 'Last Name',
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                context,
+                controller: emailController,
+                icon: Icons.alternate_email,
+                hintText: 'Email',
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                context,
+                controller: passwordController,
+                icon: Icons.lock,
+                hintText: 'Password',
+                obscureText: true,
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                context,
+                controller: numChildrenController,
+                icon: Icons.child_care,
+                hintText: 'Number of Children',
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                context,
+                controller: daysAvailableController,
+                icon: Icons.calendar_today,
+                hintText: 'Days Available',
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                context,
+                controller: destinationController,
+                icon: Icons.school,
+                hintText: 'Destination',
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                context,
+                controller: residenceController,
+                icon: Icons.home,
+                hintText: 'Residence',
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                context,
+                controller: vehicleInfoController,
+                icon: Icons.directions_car,
+                hintText: 'Vehicle Information',
+                iconColor: carColor,
+              ),
+              const SizedBox(height: 40),
+              Center(
+                child: ElevatedButton(
+                  onPressed: checkIfNetworkIsAvailable,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: carColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: const Text(
+                    'Sign Up',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (c) => const LoginScreen()),
+                    );
+                  },
+                  child: const Text(
+                    'Joined us before? Login',
+                    style: TextStyle(
+                      fontFamily: 'Segoe UI',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: Color(0xFF252525),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(BuildContext context, {required TextEditingController controller, required IconData icon, required String hintText, bool obscureText = false, required Color iconColor}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: Icon(icon, color: iconColor, size: 32),
+        ),
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 16,
+              color: Color(0x99BEBEBE),
+            ),
+            contentPadding: const EdgeInsets.only(left: 50),
+            enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFFBEBEBE), width: 2),
+            ),
+            focusedBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF4A73DA), width: 2),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

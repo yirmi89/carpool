@@ -1,70 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:carpool/authentication/login_screen.dart';
-import 'create_group.dart';
-import 'join_group.dart';
-import 'my_ride_details.dart';
+import 'package:carpool/pages/profile_screen.dart';
+import 'package:carpool/pages/notifications_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double screenWidth = MediaQuery.of(context).size.width;
+    const Color carColor = Color(0xFF333F48); // Dark Gray
+    const Color textColor = Color(0xFF263A6D); // Text Color
+    const Color boxColor = Color(0xFFF2F4F7); // Background color for the feature boxes
+    const Color drawerItemColor = Color(0xFFF2F2F2); // Background color for drawer items
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Carpool Management'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black),
+            onPressed: () => Scaffold.of(context).openDrawer(),
           ),
-        ],
+        ),
       ),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.05),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildMenuCard(
-                context,
-                icon: Icons.group_add,
-                title: 'Join a Ride Group',
+      drawer: Drawer(
+        child: Container(
+          color: drawerItemColor,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: carColor,
+                ),
+                child: Text(
+                  'Menu',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              _buildDrawerItem(
+                icon: Icons.person,
+                text: 'Profile',
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const JoinGroupScreen()),
+                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
                   );
                 },
               ),
-              SizedBox(height: screenHeight * 0.02),
-              _buildMenuCard(
-                context,
-                icon: Icons.add_circle_outline,
-                title: 'Create a Ride Group',
+              _buildDrawerItem(
+                icon: Icons.notifications,
+                text: 'Notifications',
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreateGroupScreen()),
+                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
                   );
                 },
               ),
-              SizedBox(height: screenHeight * 0.02),
-              _buildMenuCard(
-                context,
-                icon: Icons.edit,
-                title: 'My Ride Details',
+              _buildDrawerItem(
+                icon: Icons.logout,
+                text: 'Logout',
                 onTap: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const MyRideDetailsScreen()),
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
                   );
                 },
               ),
@@ -72,35 +77,103 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const SizedBox(height: 20),
+            Center(
+              child: Text(
+                'Welcome to Carpool Management!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildFeatureCard(
+                  context,
+                  'Create Group',
+                  Icons.group,
+                  '/createGroup',
+                  carColor,
+                  boxColor,
+                ),
+                _buildFeatureCard(
+                  context,
+                  'Join Group',
+                  Icons.group_add,
+                  '/joinGroup',
+                  carColor,
+                  boxColor,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: _buildFeatureCard(
+                context,
+                'Schedule',
+                Icons.schedule,
+                '/schedule',
+                carColor,
+                boxColor,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildMenuCard(BuildContext context, {required IconData icon, required String title, required VoidCallback onTap}) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: InkWell(
+  Widget _buildDrawerItem({required IconData icon, required String text, required GestureTapCallback onTap}) {
+    return Container(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(text),
         onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: screenWidth * 0.05, horizontal: screenWidth * 0.1),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(BuildContext context, String title, IconData icon, String? route, Color iconColor, Color boxColor) {
+    return GestureDetector(
+      onTap: () {
+        if (route != null) {
+          Navigator.pushNamed(context, route);
+        }
+      },
+      child: Card(
+        color: boxColor, // Set the background color of the card
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.4,
+          height: 150,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 40, color: Colors.purple),
-              SizedBox(width: screenWidth * 0.05),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontFamily: 'Comme',
-                    color: Color(0xFF6EE2F5),
-                    fontWeight: FontWeight.bold,
-                  ),
+              Icon(icon, size: 40, color: iconColor),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),

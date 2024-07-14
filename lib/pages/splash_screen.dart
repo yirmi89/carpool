@@ -12,7 +12,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToLogin(); 
+    _navigateToLogin();
   }
 
   _navigateToLogin() async {
@@ -33,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Padding(
           padding: EdgeInsets.all(screenWidth * 0.05),
           child: Image.asset(
-            "assets/images/logo.png",
+            "assets/images/carpool_logo.png",
             height: screenHeight * 0.3, // Adjust the logo size as needed
           ),
         ),
