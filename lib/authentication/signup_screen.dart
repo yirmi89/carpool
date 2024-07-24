@@ -14,41 +14,34 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController numChildrenController = TextEditingController();
-  final TextEditingController daysAvailableController = TextEditingController();
-  final TextEditingController destinationController = TextEditingController();
-  final TextEditingController residenceController = TextEditingController();
-  final TextEditingController vehicleInfoController = TextEditingController();
-  final CommonMethods cMethods = CommonMethods();
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController numChildrenController = TextEditingController();
+  TextEditingController daysAvailableController = TextEditingController();
+  TextEditingController destinationController = TextEditingController();
+  TextEditingController residenceController = TextEditingController();
+  TextEditingController vehicleInfoController = TextEditingController();
+  CommonMethods cMethods = CommonMethods();
 
-  void checkIfNetworkIsAvailable() async {
-    bool isConnected = await cMethods.checkConnectivity(context);
-    if (isConnected) {
-      if (signUpFormValidation()) {
-        registerNewUser();
-      }
-    }
+  void checkIfNetworkIsAvailable() {
+    cMethods.checkConnectivity(context);
+    signUpFormValidation();
   }
 
-  bool signUpFormValidation() {
+  void signUpFormValidation() {
     if (firstNameController.text.trim().length < 3) {
       cMethods.displaySnackBar("Your first name must be at least 3 characters.", context);
-      return false;
     } else if (lastNameController.text.trim().length < 3) {
       cMethods.displaySnackBar("Your last name must be at least 3 characters.", context);
-      return false;
     } else if (!emailController.text.contains("@")) {
       cMethods.displaySnackBar("Please write a valid email.", context);
-      return false;
     } else if (passwordController.text.trim().length < 6) {
       cMethods.displaySnackBar("Your password must be at least 6 characters.", context);
-      return false;
+    } else {
+      registerNewUser();
     }
-    return true;
   }
 
   void registerNewUser() async {
@@ -58,35 +51,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
       builder: (BuildContext context) => const LoadingDialog(messageText: "Registering your account..."),
     );
 
-    try {
-      final User? userFirebase = (await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      )).user;
+    final User? userFirebase = (
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        ).catchError((errorMsg) {
+          Navigator.pop(context);
+          cMethods.displaySnackBar(errorMsg.toString(), context);
+        })
+    ).user;
 
-      if (userFirebase != null) {
-        DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("users").child(userFirebase.uid);
-        Map<String, String> userDataMap = {
-          "first_name": firstNameController.text.trim(),
-          "last_name": lastNameController.text.trim(),
-          "email": emailController.text.trim(),
-          "password": passwordController.text.trim(),
-          "num_children": numChildrenController.text.trim(),
-          "days_available": daysAvailableController.text.trim(),
-          "destination": destinationController.text.trim(),
-          "residence": residenceController.text.trim(),
-          "vehicle_info": vehicleInfoController.text.trim(),
-          "blockStatus": "no",
-        };
-        usersRef.set(userDataMap);
+    if (!context.mounted) return;
+    Navigator.pop(context);
 
-        Navigator.push(context, MaterialPageRoute(builder: (c) => const HomeScreen()));
-      }
-    } catch (error) {
-      cMethods.displaySnackBar(error.toString(), context);
-    } finally {
-      if (!context.mounted) return;
-      Navigator.pop(context);
+    if (userFirebase != null) {
+      DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("users").child(userFirebase.uid);
+      Map<String, String> userDataMap = {
+        "first_name": firstNameController.text.trim(),
+        "last_name": lastNameController.text.trim(),
+        "email": emailController.text.trim(),
+        "num_children": numChildrenController.text.trim(),
+        "days_available": daysAvailableController.text.trim(),
+        "destination": destinationController.text.trim(),
+        "residence": residenceController.text.trim(),
+        "vehicle_info": vehicleInfoController.text.trim(),
+        "blockStatus": "no",
+      };
+      usersRef.set(userDataMap).then((_) {
+        String userName = "${firstNameController.text.trim()} ${lastNameController.text.trim()}";
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (c) => HomeScreen(userName: userName)));
+      });
+    } else {
+      cMethods.displaySnackBar("Registration failed. Please try again.", context);
     }
   }
 
@@ -226,13 +222,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (c) => const LoginScreen()),
-                    );
+                    Navigator.push(context, MaterialPageRoute(builder: (c) => const LoginScreen()));
                   },
                   child: const Text(
-                    'Joined us before? Login',
+                    'Already have an account? Login',
                     style: TextStyle(
                       fontFamily: 'Segoe UI',
                       fontWeight: FontWeight.w600,

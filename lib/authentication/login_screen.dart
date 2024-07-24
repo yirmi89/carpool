@@ -3,9 +3,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:carpool/authentication/signup_screen.dart';
 import 'package:carpool/global/global_var.dart';
-import '../methods/common_methods.dart';
-import '../pages/home_screen.dart';
-import '../widgets/loading_dialog.dart';
+import 'package:carpool/methods/common_methods.dart';
+import 'package:carpool/pages/home_screen.dart';
+import 'package:carpool/widgets/loading_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,50 +15,53 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailTextEditingController = TextEditingController();
-  final TextEditingController passwordTextEditingController = TextEditingController();
-  final CommonMethods cMethods = CommonMethods();
+  TextEditingController emailTextEditingController = TextEditingController();
+  TextEditingController passwordTextEditingController = TextEditingController();
+  CommonMethods cMethods = CommonMethods();
 
   void checkIfNetworkIsAvailable() async {
     bool isConnected = await cMethods.checkConnectivity(context);
     if (isConnected) {
-      if (signInFormValidation()) {
-        signInUser();
-      }
+      signInFormValidation();
     }
   }
 
-  bool signInFormValidation() {
+  void signInFormValidation() {
     if (!emailTextEditingController.text.contains("@")) {
       cMethods.displaySnackBar("Please write a valid email.", context);
-      return false;
     } else if (passwordTextEditingController.text.trim().length < 6) {
       cMethods.displaySnackBar("Your password must be at least 6 characters.", context);
-      return false;
+    } else {
+      signInUser();
     }
-    return true;
   }
 
   void signInUser() async {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) => const LoadingDialog(messageText: "Allowing you to login..."),
+      builder: (BuildContext context) => const LoadingDialog(messageText: "Allowing you to Login..."),
     );
 
     try {
-      final User? userFirebase = (await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailTextEditingController.text.trim(),
         password: passwordTextEditingController.text.trim(),
-      )).user;
+      );
+
+      User? userFirebase = userCredential.user;
+
+      if (!context.mounted) return;
+      Navigator.pop(context);
 
       if (userFirebase != null) {
         DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("users").child(userFirebase.uid);
         usersRef.once().then((snap) {
           if (snap.snapshot.value != null) {
-            if ((snap.snapshot.value as Map)["blockStatus"] == "no") {
-              userName = (snap.snapshot.value as Map)["first_name"];
-              Navigator.push(context, MaterialPageRoute(builder: (c) => const HomeScreen()));
+            Map<String, dynamic> userMap = Map<String, dynamic>.from(snap.snapshot.value as Map);
+            if (userMap["blockStatus"] == "no") {
+              userName = userMap["first_name"] ?? "User"; // Provide a default value if null
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (c) => HomeScreen(userName: userName)));
             } else {
               FirebaseAuth.instance.signOut();
               cMethods.displaySnackBar("You are blocked. Contact admin.", context);
@@ -68,12 +71,12 @@ class _LoginScreenState extends State<LoginScreen> {
             cMethods.displaySnackBar("Your record does not exist as a user.", context);
           }
         });
+      } else {
+        cMethods.displaySnackBar("Login failed. Please try again.", context);
       }
     } catch (error) {
-      cMethods.displaySnackBar(error.toString(), context);
-    } finally {
-      if (!context.mounted) return;
       Navigator.pop(context);
+      cMethods.displaySnackBar(error.toString(), context);
     }
   }
 
@@ -157,10 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (c) => const SignUpScreen()),
-                    );
+                    Navigator.push(context, MaterialPageRoute(builder: (c) => const SignUpScreen()));
                   },
                   child: const Text(
                     'Don\'t have an account? Sign up',
