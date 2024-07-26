@@ -1,195 +1,189 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:carpool/authentication/login_screen.dart';
-import 'package:carpool/pages/profile_screen.dart';
-import 'package:carpool/pages/notifications_screen.dart';
+import 'package:carpool/pages/create_group_screen.dart';
+import 'package:carpool/pages/search_group_screen.dart';
+import 'package:carpool/pages/my_schedule_screen.dart';
+import 'package:carpool/pages/my_groups_screen.dart';
+import 'package:carpool/pages/my_profile_screen.dart'; // Updated import
 
 class HomeScreen extends StatelessWidget {
-  final String userName;
-  const HomeScreen({super.key, required this.userName});
+  final User? user;
+
+  const HomeScreen({super.key, this.user});
 
   @override
   Widget build(BuildContext context) {
-    const Color carColor = Color(0xFF333F48); // Dark Gray
-    const Color textColor = Color(0xFF263A6D); // Text Color
-    const Color boxColor = Color(0xFFF2F4F7); // Background color for the feature boxes
-    const Color drawerItemColor = Color(0xFFF2F2F2); // Background color for drawer items
+    final FirebaseAuth auth = FirebaseAuth.instance;
+
+    Future<void> signOut() async {
+      await auth.signOut();
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+    }
+
+    final String firstName = user?.displayName ?? 'User';
+    final Color primaryColor = const Color(0xFF1D7874); // Adjusted color from the carpool logo
+    final Color accentColor = const Color(0xFF124E57);
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
+        title: Text('Hi, $firstName!', style: TextStyle(color: primaryColor)),
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
+        iconTheme: IconThemeData(color: primaryColor),
       ),
       drawer: Drawer(
-        child: Container(
-          color: drawerItemColor,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: carColor,
-                ),
-                child: Text(
-                  'Menu',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
-              _buildDrawerItem(
-                icon: Icons.person,
-                text: 'Profile',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
-                  );
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.notifications,
-                text: 'Notifications',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                  );
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.logout,
-                text: 'Logout',
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: <Widget>[
-            const SizedBox(height: 20),
-            Center(
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: primaryColor,
+              ),
               child: Text(
-                'Hello $userName!',
+                'Menu',
                 style: TextStyle(
+                  color: Colors.white,
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 40),
-            Center(
-              child: Text(
-                'Welcome to Carpool Management!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildFeatureCard(
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text('My Profile'),
+              onTap: () {
+                Navigator.push(
                   context,
-                  'Create Group',
-                  Icons.group,
-                  '/createGroup',
-                  carColor,
-                  boxColor,
-                ),
-                _buildFeatureCard(
-                  context,
-                  'Join Group',
-                  Icons.group_add,
-                  '/joinGroup',
-                  carColor,
-                  boxColor,
-                ),
-              ],
+                  MaterialPageRoute(builder: (context) => const MyProfileScreen()),
+                );
+              },
             ),
-            const SizedBox(height: 20),
-            Center(
-              child: _buildFeatureCard(
-                context,
-                'Schedule',
-                Icons.schedule,
-                '/schedule',
-                carColor,
-                boxColor,
-              ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Sign Out'),
+              onTap: signOut,
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem({required IconData icon, required String text, required GestureTapCallback onTap}) {
-    return Container(
-      color: Colors.transparent,
-      child: ListTile(
-        leading: Icon(icon),
-        title: Text(text),
-        onTap: onTap,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CreateGroupScreen()),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Are you ready to create a group?',
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Sit back, relax, and organize your carpool.',
+                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      Icon(Icons.group_add, color: Colors.white, size: 50),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              GridView.count(
+                shrinkWrap: true,
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                children: [
+                  _buildMenuButton(context, 'Create Group', Icons.group_add, primaryColor, const CreateGroupScreen()),
+                  _buildMenuButton(context, 'Search Group', Icons.search, primaryColor, const SearchGroupScreen()),
+                  _buildMenuButton(context, 'My Schedule', Icons.schedule, primaryColor, const MyScheduleScreen()),
+                  _buildMenuButton(context, 'My Groups', Icons.group, primaryColor, const MyGroupsScreen()),
+                ],
+              ),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SearchGroupScreen()),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: primaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Take a look around you',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Explore groups and join the right one for you.',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildFeatureCard(BuildContext context, String title, IconData icon, String? route, Color iconColor, Color boxColor) {
+  Widget _buildMenuButton(BuildContext context, String title, IconData icon, Color color, Widget targetScreen) {
     return GestureDetector(
       onTap: () {
-        if (route != null) {
-          Navigator.pushNamed(context, route);
-        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => targetScreen),
+        );
       },
-      child: Card(
-        color: boxColor, // Set the background color of the card
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.4,
-          height: 150,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 40, color: iconColor),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 50, color: color),
+            const SizedBox(height: 10),
+            Text(title, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
         ),
       ),
     );

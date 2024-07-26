@@ -14,8 +14,8 @@ dependencies:
 
   cupertino_icons: ^1.0.6
   flutter_lints: ^3.0.0
-  firebase_auth: ^4.20.0
   firebase_core: ^2.18.0
+  firebase_auth: ^4.8.4
   firebase_database: ^10.0.3
   google_maps_flutter: ^2.0.6
   location: ^4.3.0

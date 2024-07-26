@@ -1,9 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:carpool/authentication/login_screen.dart';
+import 'package:carpool/authentication/signup_screen.dart';
 import 'package:carpool/pages/splash_screen.dart';
 import 'package:carpool/pages/home_screen.dart';
+import 'package:carpool/pages/my_profile_screen.dart';
+import 'package:carpool/pages/my_schedule_screen.dart';  // Updated import
+import 'package:carpool/pages/create_group_screen.dart';
+import 'package:carpool/pages/join_group_screen.dart';
+import 'package:carpool/pages/notifications_screen.dart';
+import 'package:carpool/pages/search_group_screen.dart';
+import 'package:carpool/pages/my_groups_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +42,21 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const SplashScreen(), // Start with the SplashScreen
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignUpScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/profile': (context) => const MyProfileScreen(),
+        '/schedule': (context) => const MyScheduleScreen(),  // Updated route
+        '/createGroup': (context) => const CreateGroupScreen(),
+        '/joinGroup': (context) => const JoinGroupScreen(),
+        '/notifications': (context) => const NotificationsScreen(),
+        '/searchGroup': (context) => const SearchGroupScreen(),
+        '/myGroups': (context) => const MyGroupsScreen(),
+
+      },
     );
   }
 }

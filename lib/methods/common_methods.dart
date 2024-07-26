@@ -2,16 +2,20 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
 class CommonMethods {
-  Future<bool> checkConnectivity(BuildContext context) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
-      displaySnackBar("No internet connection. Please check your network.", context);
-      return false;
+  checkConnectivity(BuildContext context) async {
+    var connectionResult = await Connectivity().checkConnectivity();
+
+    if (connectionResult != ConnectivityResult.mobile &&
+        connectionResult != ConnectivityResult.wifi) {
+      if (!context.mounted) return;
+      displaySnackBar(
+          "your Internet is not Available. Check your connection. Try Again.",
+          context);
     }
-    return true;
   }
 
-  void displaySnackBar(String message, BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  displaySnackBar(String messageText, BuildContext context) {
+    var snackBar = SnackBar(content: Text(messageText));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

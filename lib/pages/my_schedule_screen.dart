@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-class CreateGroupScreen extends StatelessWidget {
-  const CreateGroupScreen({super.key});
+class MyScheduleScreen extends StatelessWidget {
+  const MyScheduleScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Group'),
+        title: const Text('My Schedule'),
       ),
       body: const Center(
-        child: Text('Create Group Screen'),
+        child: Text('My Schedule Screen'),
       ),
     );
   }
