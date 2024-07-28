@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:carpool/pages/home_screen.dart'; // Adjust the import based on your project structure
+import 'package:carpool/generated/l10n.dart'; // Correct import for S
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+  final void Function(Locale) onLocaleChange;
+
+  const SignUpScreen({super.key, required this.onLocaleChange});
 
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
@@ -41,7 +44,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomeScreen(user: updatedUser)),
+            MaterialPageRoute(
+                builder: (context) => HomeScreen(
+                  user: updatedUser,
+                  onLocaleChange: widget.onLocaleChange,
+                )),
           );
         }
       } else {
@@ -66,7 +73,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
+      appBar: AppBar(title: Text(S.of(context).signup)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -75,41 +82,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
             children: <Widget>[
               TextField(
                 controller: _firstNameController,
-                decoration: const InputDecoration(labelText: 'First Name'),
+                decoration: InputDecoration(labelText: S.of(context).firstName),
               ),
               TextField(
                 controller: _lastNameController,
-                decoration: const InputDecoration(labelText: 'Last Name'),
+                decoration: InputDecoration(labelText: S.of(context).lastName),
               ),
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: S.of(context).email),
               ),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: InputDecoration(labelText: S.of(context).password),
                 obscureText: true,
               ),
               TextField(
                 controller: _childrenController,
-                decoration: const InputDecoration(labelText: 'Number of Children'),
+                decoration: InputDecoration(labelText: S.of(context).numberOfChildren),
               ),
               TextField(
                 controller: _destinationController,
-                decoration: const InputDecoration(labelText: 'Destination'),
+                decoration: InputDecoration(labelText: S.of(context).destination),
               ),
               TextField(
                 controller: _residenceController,
-                decoration: const InputDecoration(labelText: 'Residence'),
+                decoration: InputDecoration(labelText: S.of(context).residence),
               ),
               TextField(
                 controller: _vehicleController,
-                decoration: const InputDecoration(labelText: 'Vehicle Information'),
+                decoration: InputDecoration(labelText: S.of(context).vehicleInformation),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _signUp,
-                child: const Text('Sign Up'),
+                child: Text(S.of(context).signup),
               ),
               if (_errorMessage.isNotEmpty)
                 Text(
@@ -120,7 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('Already have an account? Login'),
+                child: Text(S.of(context).loginPrompt),
               ),
             ],
           ),

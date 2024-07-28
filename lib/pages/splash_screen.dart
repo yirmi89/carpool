@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:carpool/authentication/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final void Function(Locale) onLocaleChange;
+  const SplashScreen({super.key, required this.onLocaleChange});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -19,7 +20,8 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 3), () {});
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      MaterialPageRoute(
+          builder: (context) => LoginScreen(onLocaleChange: widget.onLocaleChange)),
     );
   }
 

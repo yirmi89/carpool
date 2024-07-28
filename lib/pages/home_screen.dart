@@ -5,34 +5,38 @@ import 'package:carpool/pages/create_group_screen.dart';
 import 'package:carpool/pages/search_group_screen.dart';
 import 'package:carpool/pages/my_schedule_screen.dart';
 import 'package:carpool/pages/my_groups_screen.dart';
-import 'package:carpool/pages/my_profile_screen.dart'; // Updated import
+import 'package:carpool/pages/my_profile_screen.dart';
+import 'package:carpool/pages/settings_screen.dart';
+import 'package:carpool/generated/l10n.dart';
 
 class HomeScreen extends StatelessWidget {
   final User? user;
+  final void Function(Locale) onLocaleChange;
 
-  const HomeScreen({super.key, this.user});
+  const HomeScreen({super.key, this.user, required this.onLocaleChange});
 
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth auth = FirebaseAuth.instance;
+    final String firstName = user?.displayName ?? 'User';
+    final greetingMessage = S.of(context).hi(firstName);
 
     Future<void> signOut() async {
       await auth.signOut();
       if (context.mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          MaterialPageRoute(builder: (context) => LoginScreen(onLocaleChange: onLocaleChange)),
         );
       }
     }
 
-    final String firstName = user?.displayName ?? 'User';
     final Color primaryColor = const Color(0xFF1D7874); // Adjusted color from the carpool logo
     final Color accentColor = const Color(0xFF124E57);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hi, $firstName!', style: TextStyle(color: primaryColor)),
+        title: Text(greetingMessage, style: TextStyle(color: primaryColor)),
         backgroundColor: Colors.white,
         iconTheme: IconThemeData(color: primaryColor),
       ),
@@ -45,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                 color: primaryColor,
               ),
               child: Text(
-                'Menu',
+                S.of(context).menu,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -53,8 +57,8 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.person),
-              title: Text('My Profile'),
+              leading: const Icon(Icons.person),
+              title: Text(S.of(context).profile),
               onTap: () {
                 Navigator.push(
                   context,
@@ -63,8 +67,18 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Sign Out'),
+              leading: const Icon(Icons.settings),
+              title: Text(S.of(context).settings),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsScreen(onLocaleChange: onLocaleChange)),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: Text(S.of(context).signOut),
               onTap: signOut,
             ),
           ],
@@ -95,19 +109,19 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            'Are you ready to create a group?',
+                            S.of(context).createGroupPrompt,
                             style: TextStyle(color: Colors.white, fontSize: 18),
                           ),
                           SizedBox(height: 10),
                           Text(
-                            'Sit back, relax, and organize your carpool.',
+                            S.of(context).createGroupSubPrompt,
                             style: TextStyle(color: Colors.white70, fontSize: 14),
                           ),
                         ],
                       ),
-                      Icon(Icons.group_add, color: Colors.white, size: 50),
+                      const Icon(Icons.group_add, color: Colors.white, size: 50),
                     ],
                   ),
                 ),
@@ -119,13 +133,18 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildMenuButton(context, 'Create Group', Icons.group_add, primaryColor, const CreateGroupScreen()),
-                  _buildMenuButton(context, 'Search Group', Icons.search, primaryColor, const SearchGroupScreen()),
-                  _buildMenuButton(context, 'My Schedule', Icons.schedule, primaryColor, const MyScheduleScreen()),
-                  _buildMenuButton(context, 'My Groups', Icons.group, primaryColor, const MyGroupsScreen()),
+                  _buildMenuButton(context, S.of(context).createGroup, Icons.group_add, primaryColor, const CreateGroupScreen()),
+                  _buildMenuButton(context, S.of(context).searchGroup, Icons.search, primaryColor, const SearchGroupScreen()),
+                  _buildMenuButton(context, S.of(context).mySchedule, Icons.schedule, primaryColor, const MyScheduleScreen()),
+                  _buildMenuButton(context, S.of(context).myGroups, Icons.group, primaryColor, const MyGroupsScreen()),
                 ],
               ),
               const SizedBox(height: 20),
+              Text(
+                S.of(context).lookAround,
+                style: TextStyle(color: primaryColor, fontSize: 18),
+              ),
+              const SizedBox(height: 10),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -133,26 +152,18 @@ class HomeScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const SearchGroupScreen()),
                   );
                 },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Take a look around you',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                child: Center(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white, width: 2),
+                      image: const DecorationImage(
+                        image: AssetImage('assets/images/home_screen_bottom.png'), // Path to your image
+                        fit: BoxFit.cover,
                       ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Explore groups and join the right one for you.',
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -173,16 +184,19 @@ class HomeScreen extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color,
           borderRadius: BorderRadius.circular(20),
         ),
-        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 50, color: color),
+            Icon(icon, color: Colors.white, size: 50),
             const SizedBox(height: 10),
-            Text(title, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
