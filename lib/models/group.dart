@@ -1,49 +1,49 @@
 class Group {
   String id;
-  String name;
-  String description;
-  int availableSeats;
-  List<String> drivingDays;
-  String createdBy;
-  String schedule; // Add schedule property
-  String vehicleInfo; // Add vehicleInfo property
+  final String groupName;
+  final String destinationCity;
+  final String destinationAddress;
+  final int radius;
+  final List<String> days;
+  final List<String> hours;
+  final String creatorId;
 
   Group({
     required this.id,
-    required this.name,
-    required this.description,
-    required this.availableSeats,
-    required this.drivingDays,
-    required this.createdBy,
-    required this.schedule, // Add schedule property
-    required this.vehicleInfo, // Add vehicleInfo property
+    required this.groupName,
+    required this.destinationCity,
+    required this.destinationAddress,
+    required this.radius,
+    required this.days,
+    required this.hours,
+    required this.creatorId,
   });
 
-  // Convert a Group into a Map.
+  factory Group.fromMap(Map<String, dynamic> data, String id) {
+    return Group(
+      id: id,
+      groupName: data['groupName'],
+      destinationCity: data['destinationCity'],
+      destinationAddress: data['destinationAddress'],
+      radius: data['radius'],
+      days: List<String>.from(data['days']),
+      hours: List<String>.from(data['hours']),
+      creatorId: data['creatorId'],
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'availableSeats': availableSeats,
-      'drivingDays': drivingDays,
-      'createdBy': createdBy,
-      'schedule': schedule, // Add schedule property
-      'vehicleInfo': vehicleInfo, // Add vehicleInfo property
+      'groupName': groupName,
+      'destinationCity': destinationCity,
+      'destinationAddress': destinationAddress,
+      'radius': radius,
+      'days': days,
+      'hours': hours,
+      'creatorId': creatorId,
     };
   }
 
-  // Create a Group from a Map.
-  factory Group.fromMap(Map<String, dynamic> map) {
-    return Group(
-      id: map['id'],
-      name: map['name'],
-      description: map['description'],
-      availableSeats: map['availableSeats'],
-      drivingDays: List<String>.from(map['drivingDays']),
-      createdBy: map['createdBy'],
-      schedule: map['schedule'], // Add schedule property
-      vehicleInfo: map['vehicleInfo'], // Add vehicleInfo property
-    );
-  }
+  String get name => groupName;
+  String get description => '$destinationCity, $destinationAddress';
 }

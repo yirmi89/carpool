@@ -1,21 +1,17 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/material.dart';
+import 'package:google_maps_webservice/places.dart';
 
 class CommonMethods {
-  checkConnectivity(BuildContext context) async {
-    var connectionResult = await Connectivity().checkConnectivity();
+  final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'Api');
 
-    if (connectionResult != ConnectivityResult.mobile &&
-        connectionResult != ConnectivityResult.wifi) {
-      if (!context.mounted) return;
-      displaySnackBar(
-          "your Internet is not Available. Check your connection. Try Again.",
-          context);
+  Future<List<String>> getAddresses(String city, String pattern) async {
+    final response = await _places.autocomplete(
+      pattern,
+      components: [Component(Component.country, 'il')],
+    );
+    if (response.isOkay) {
+      return response.predictions.map((p) => p.description!).toList();
+    } else {
+      return <String>[];  // Return an empty list instead of List<String?>
     }
-  }
-
-  displaySnackBar(String messageText, BuildContext context) {
-    var snackBar = SnackBar(content: Text(messageText));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

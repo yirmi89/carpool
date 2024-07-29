@@ -1,166 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:carpool/generated/l10n.dart';
 
 class MyProfileScreen extends StatelessWidget {
-  const MyProfileScreen({super.key});
+  final void Function(Locale) onLocaleChange;
+
+  const MyProfileScreen({super.key, required this.onLocaleChange});
 
   @override
   Widget build(BuildContext context) {
-    const Color carColor = Color(0xFF333F48); // Dark Gray
-    const Color textColor = Color(0xFF263A6D); // Text Color
-
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: Text(S.of(context).profile),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            const Center(
-              child: Text(
-                'Update Your Profile',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-                textAlign: TextAlign.center,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                S.of(context).profile,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 40),
-            _buildTextField(
-              context,
-              icon: Icons.person,
-              hintText: 'First Name',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.person,
-              hintText: 'Last Name',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.email,
-              hintText: 'Email',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.child_care,
-              hintText: 'Number of Children',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.calendar_today,
-              hintText: 'Days Available',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.school,
-              hintText: 'Place of Destination',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.home,
-              hintText: 'Place of Residence',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.directions_car,
-              hintText: 'Vehicle Information',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.contact_phone,
-              hintText: 'Emergency Contact',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              context,
-              icon: Icons.access_time,
-              hintText: 'Preferred Driving Times',
-              iconColor: carColor,
-            ),
-            const SizedBox(height: 40),
-            Center(
-              child: ElevatedButton(
+              const SizedBox(height: 20),
+              // Example profile details
+              Text(
+                S.of(context).firstName + ': John',
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                S.of(context).lastName + ': Doe',
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                S.of(context).email + ': john.doe@example.com',
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
                 onPressed: () {
-                  // Implement save functionality
+                  // Example of using onLocaleChange to switch languages
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(S.of(context).selectLanguage),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            title: Text('English'),
+                            onTap: () {
+                              onLocaleChange(Locale('en'));
+                              Navigator.pop(context);
+                            },
+                          ),
+                          ListTile(
+                            title: Text('עברית'),
+                            onTap: () {
+                              onLocaleChange(Locale('he'));
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: carColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                child: const Text(
-                  'Save',
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 18,
-                    color: Colors.white,
-                  ),
-                ),
+                child: Text(S.of(context).selectLanguage),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(BuildContext context, {required IconData icon, required String hintText, bool obscureText = false, required Color iconColor}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: Icon(icon, color: iconColor, size: 32),
-        ),
-        TextField(
-          obscureText: obscureText,
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: const TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: 16,
-              color: Color(0x99BEBEBE),
-            ),
-            contentPadding: const EdgeInsets.only(left: 50),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFFBEBEBE), width: 2),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFF4A73DA), width: 2),
-            ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

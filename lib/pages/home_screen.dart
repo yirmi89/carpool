@@ -62,7 +62,7 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MyProfileScreen()),
+                  MaterialPageRoute(builder: (context) => MyProfileScreen(onLocaleChange: onLocaleChange)),
                 );
               },
             ),
@@ -94,7 +94,7 @@ class HomeScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreateGroupScreen()),
+                    MaterialPageRoute(builder: (context) => CreateGroupScreen(onLocaleChange: onLocaleChange)),
                   );
                 },
                 child: Container(
@@ -133,10 +133,10 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildMenuButton(context, S.of(context).createGroup, Icons.group_add, primaryColor, const CreateGroupScreen()),
-                  _buildMenuButton(context, S.of(context).searchGroup, Icons.search, primaryColor, const SearchGroupScreen()),
-                  _buildMenuButton(context, S.of(context).mySchedule, Icons.schedule, primaryColor, const MyScheduleScreen()),
-                  _buildMenuButton(context, S.of(context).myGroups, Icons.group, primaryColor, const MyGroupsScreen()),
+                  _buildMenuButton(context, S.of(context).createGroup, Icons.group_add, primaryColor, CreateGroupScreen(onLocaleChange: onLocaleChange)),
+                  _buildMenuButton(context, S.of(context).searchGroup, Icons.search, primaryColor, SearchGroupScreen(onLocaleChange: onLocaleChange)),
+                  _buildMenuButton(context, S.of(context).mySchedule, Icons.schedule, primaryColor, MyScheduleScreen(onLocaleChange: onLocaleChange)),
+                  _buildMenuButton(context, S.of(context).myGroups, Icons.group, primaryColor, MyGroupsScreen(onLocaleChange: onLocaleChange)),
                 ],
               ),
               const SizedBox(height: 20),
@@ -149,7 +149,7 @@ class HomeScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SearchGroupScreen()),
+                    MaterialPageRoute(builder: (context) => SearchGroupScreen(onLocaleChange: onLocaleChange)),
                   );
                 },
                 child: Center(

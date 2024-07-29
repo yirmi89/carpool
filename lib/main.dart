@@ -13,7 +13,8 @@ import 'package:carpool/pages/notifications_screen.dart';
 import 'package:carpool/pages/search_group_screen.dart';
 import 'package:carpool/pages/my_groups_screen.dart';
 import 'package:carpool/pages/settings_screen.dart';
-import 'package:carpool/generated/l10n.dart'; // Correct import for S
+import 'package:carpool/pages/map_integration_page.dart';
+import 'package:carpool/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
@@ -98,25 +99,20 @@ class _MyAppState extends State<MyApp> {
       },
       initialRoute: '/',
       routes: {
-        '/': (context) => SplashScreen(onLocaleChange: _setLocale),
-        '/login': (context) => LoginScreen(onLocaleChange: _setLocale),
-        '/signup': (context) => SignUpScreen(onLocaleChange: _setLocale),
-        '/home': (context) => HomeScreen(onLocaleChange: _setLocale),
-        '/profile': (context) => const MyProfileScreen(),
-        '/schedule': (context) => const MyScheduleScreen(),
-        '/createGroup': (context) => const CreateGroupScreen(),
-        '/joinGroup': (context) => const JoinGroupScreen(),
-        '/notifications': (context) => const NotificationsScreen(),
-        '/searchGroup': (context) => const SearchGroupScreen(),
-        '/myGroups': (context) => const MyGroupsScreen(),
-        '/settings': (context) => SettingsScreen(onLocaleChange: _setLocale),
+        '/': (context) => SplashScreen(onLocaleChange: setLocale),
+        '/login': (context) => LoginScreen(onLocaleChange: setLocale),
+        '/signup': (context) => SignUpScreen(onLocaleChange: setLocale),
+        '/home': (context) => HomeScreen(onLocaleChange: setLocale),
+        '/profile': (context) => MyProfileScreen(onLocaleChange: setLocale),
+        '/schedule': (context) => MyScheduleScreen(onLocaleChange: setLocale),
+        '/createGroup': (context) => CreateGroupScreen(onLocaleChange: setLocale),
+        // '/joinGroup': (context) => JoinGroupScreen(onLocaleChange: setLocale),
+        // '/notifications': (context) => NotificationsScreen(onLocaleChange: setLocale),
+        '/searchGroup': (context) => SearchGroupScreen(onLocaleChange: setLocale),
+        '/myGroups': (context) => MyGroupsScreen(onLocaleChange: setLocale),
+        '/settings': (context) => SettingsScreen(onLocaleChange: setLocale),
+        '/map': (context) => MapIntegrationPage(onLocaleChange: setLocale),
       },
     );
-  }
-
-  void _setLocale(Locale locale) {
-    setState(() {
-      _locale = locale;
-    });
   }
 }

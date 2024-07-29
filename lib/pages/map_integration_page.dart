@@ -1,45 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carpool/generated/l10n.dart';
 
 class MapIntegrationPage extends StatefulWidget {
-  const MapIntegrationPage({super.key});
+  final void Function(Locale) onLocaleChange;
+
+  const MapIntegrationPage({Key? key, required this.onLocaleChange}) : super(key: key);
 
   @override
   _MapIntegrationPageState createState() => _MapIntegrationPageState();
 }
 
 class _MapIntegrationPageState extends State<MapIntegrationPage> {
-  late GoogleMapController mapController;
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+  GoogleMapController? _controller;
+  Set<Marker> _markers = {};
 
-  final Set<Marker> _markers = {};
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    _addMarkers();
+  @override
+  void initState() {
+    super.initState();
+    _loadMarkers();
   }
 
-  void _addMarkers() {
-    setState(() {
-      _markers.addAll([
-        Marker(
-          markerId: const MarkerId('group1'),
-          position: const LatLng(45.521563, -122.677433),
-          infoWindow: const InfoWindow(
-            title: 'Ride Group 1',
-            snippet: '5 seats available',
+  void _loadMarkers() {
+    FirebaseFirestore.instance.collection('groups').get().then((querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        GeoPoint point = doc['location'];
+        _markers.add(
+          Marker(
+            markerId: MarkerId(doc.id),
+            position: LatLng(point.latitude, point.longitude),
+            infoWindow: InfoWindow(title: doc['name']),
           ),
-        ),
-        Marker(
-          markerId: const MarkerId('group2'),
-          position: const LatLng(45.531563, -122.677433),
-          infoWindow: const InfoWindow(
-            title: 'Ride Group 2',
-            snippet: '3 seats available',
-          ),
-        ),
-        // Add more markers as needed
-      ]);
+        );
+      });
+
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -47,15 +45,23 @@ class _MapIntegrationPageState extends State<MapIntegrationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Available Ride Groups'),
+        title: Text(S.of(context).map),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: GoogleMap(
-        onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
-          target: _center,
-          zoom: 11.0,
+          target: LatLng(31.0461, 34.8516), // Center of Israel
+          zoom: 8,
         ),
         markers: _markers,
+        onMapCreated: (GoogleMapController controller) {
+          _controller = controller;
+        },
       ),
     );
   }

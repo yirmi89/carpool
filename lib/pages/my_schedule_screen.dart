@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 class MyScheduleScreen extends StatelessWidget {
-  const MyScheduleScreen({super.key});
+  final void Function(Locale) onLocaleChange;
+
+  const MyScheduleScreen({super.key, required this.onLocaleChange});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Schedule'),
+        title: Text('My Schedule'),
       ),
-      body: const Center(
+      body: Center(
         child: Text('My Schedule Screen'),
       ),
     );

@@ -28,5 +28,22 @@
   "menu": "תפריט",
   "createGroupPrompt": "?האם אתה מוכן ליצור קבוצה",
   "createGroupSubPrompt": ".שב, התרגע, וארגן את הקארפול שלך",
-  "selectLanguage": "בחר שפה"
+  "selectLanguage": "בחר שפה",
+  "groupName": "שם קבוצה",
+  "successfullyCreated": "נוצר בהצלחה!",
+  "goToGroupPage": "לך לדף הקבוצה",
+  "goToAllGroups": "לך לכל הקבוצות",
+  "enterGroupName": "הזן שם קבוצה",
+  "groupNameCreated": "הקבוצה \"{groupName}\" נוצרה בהצלחה!",
+  "rideGroupDestination": "יעד קבוצת הנסיעה",
+  "chooseAddress": "בחר כתובת/בית ספר/גן ילדים/מתנ׳׳ס וכו ׳",
+  "maxDistanceFromDestination": "מרחק מקסימלי מהיעד (בקילומטרים)",
+  "enterMaxDistance": "הזן את מרחק מרבי אפשרי בין מקום המוצא ליעד",
+  "noGroups": "לא נמצאו קבוצות",
+  "errorLoadingGroups": "שגיאה בטעינת הקבוצות",
+  "map": "מפה",
+  "close": "סגור",
+  "ok": "אוקיי",
+  "error": "שגיאה",
+  "success": "בוצע בהצלחה"
 }
