@@ -31,8 +31,8 @@ class HomeScreen extends StatelessWidget {
       }
     }
 
-    final Color primaryColor = const Color(0xFF1D7874); // Adjusted color from the carpool logo
-    final Color accentColor = const Color(0xFF124E57);
+    final Color primaryColor = const Color(0xFF1C4B93); // Adjusted color from the carpool logo
+    final Color accentColor = const Color(0xFF36393C);
 
     return Scaffold(
       appBar: AppBar(
@@ -112,7 +112,7 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             S.of(context).createGroupPrompt,
-                            style: TextStyle(color: Colors.white, fontSize: 18),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                           ),
                           SizedBox(height: 10),
                           Text(
@@ -142,7 +142,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 S.of(context).lookAround,
-                style: TextStyle(color: primaryColor, fontSize: 18),
+                style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 22),
               ),
               const SizedBox(height: 10),
               GestureDetector(
@@ -194,7 +194,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
               textAlign: TextAlign.center,
             ),
           ],

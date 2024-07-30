@@ -1,7 +1,7 @@
 import 'package:google_maps_webservice/places.dart';
 
 class CommonMethods {
-  final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'Api');
+  final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyBJe19nK9fg11snvL6hjWozUifUBYgDUuE');
 
   Future<List<String>> getAddresses(String city, String pattern) async {
     final response = await _places.autocomplete(

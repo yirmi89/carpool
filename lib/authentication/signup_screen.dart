@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:carpool/pages/home_screen.dart'; // Adjust the import based on your project structure
-import 'package:carpool/generated/l10n.dart'; // Correct import for S
+import 'package:carpool/pages/home_screen.dart';
+import 'package:carpool/generated/l10n.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:carpool/methods/common_methods.dart';
 
 class SignUpScreen extends StatefulWidget {
   final void Function(Locale) onLocaleChange;
@@ -18,10 +20,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _childrenController = TextEditingController();
+  final TextEditingController _departureController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
-  final TextEditingController _residenceController = TextEditingController();
   final TextEditingController _vehicleController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final CommonMethods commonMethods = CommonMethods();
   String _errorMessage = '';
 
   Future<void> _signUp() async {
@@ -31,103 +34,224 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // Ensure the user is created
       if (userCredential.user != null) {
-        print('User created: ${userCredential.user!.uid}');
-
-        // Update the user's display name
         await userCredential.user!.updateDisplayName(_firstNameController.text.trim());
-        await userCredential.user!.reload(); // Refresh the user's profile
-        User? updatedUser = _auth.currentUser; // Get the updated user
+        await userCredential.user!.reload();
+        User? updatedUser = _auth.currentUser;
 
-        // Navigate to HomeScreen
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (context) => HomeScreen(
-                  user: updatedUser,
-                  onLocaleChange: widget.onLocaleChange,
-                )),
+              builder: (context) => HomeScreen(
+                user: updatedUser,
+                onLocaleChange: widget.onLocaleChange,
+              ),
+            ),
           );
         }
       } else {
         setState(() {
           _errorMessage = 'User creation failed. Please try again.';
         });
-        print('User creation failed. Please try again.');
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message ?? 'An unknown error occurred';
       });
-      print('FirebaseAuthException: $e');
     } catch (e) {
       setState(() {
         _errorMessage = 'An unknown error occurred';
       });
-      print('Error: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = const Color(0xFF1C4B93); // Adjusted color from the carpool logo
+
     return Scaffold(
-      appBar: AppBar(title: Text(S.of(context).signup)),
+      appBar: AppBar(
+        title: Text(
+          S.of(context).login,
+          style: TextStyle(color: Colors.white70),
+        ),
+        backgroundColor: primaryColor,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              const SizedBox(height: 50),
+              Text(
+                S.of(context).signup,
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Create a new account',
+                style: TextStyle(fontSize: 20, color: Colors.grey[700]),
+              ),
+              const SizedBox(height: 30),
               TextField(
                 controller: _firstNameController,
-                decoration: InputDecoration(labelText: S.of(context).firstName),
+                decoration: InputDecoration(
+                  labelText: S.of(context).firstName,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: _lastNameController,
-                decoration: InputDecoration(labelText: S.of(context).lastName),
+                decoration: InputDecoration(
+                  labelText: S.of(context).lastName,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: S.of(context).email),
+                decoration: InputDecoration(
+                  labelText: S.of(context).email,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: S.of(context).password),
+                decoration: InputDecoration(
+                  labelText: S.of(context).password,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: Icon(Icons.visibility_off),
+                ),
                 obscureText: true,
               ),
-              TextField(
+              const SizedBox(height: 16),
+              TextFormField(
                 controller: _childrenController,
-                decoration: InputDecoration(labelText: S.of(context).numberOfChildren),
+                decoration: InputDecoration(
+                  labelText: S.of(context).numberOfChildren,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  setState(() {
+                    _childrenController.text = value;
+                  });
+                },
               ),
-              TextField(
-                controller: _destinationController,
-                decoration: InputDecoration(labelText: S.of(context).destination),
+              const SizedBox(height: 16),
+              TypeAheadFormField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  controller: _departureController,
+                  decoration: InputDecoration(
+                    labelText: S.of(context).departureLocation,
+                    hintText: '', // Removed text
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                suggestionsCallback: (pattern) async {
+                  return await commonMethods.getAddresses(_departureController.text, pattern);
+                },
+                itemBuilder: (context, suggestion) {
+                  return ListTile(
+                    title: Text(suggestion.toString()),
+                  );
+                },
+                onSuggestionSelected: (suggestion) {
+                  _departureController.text = suggestion.toString();
+                },
               ),
-              TextField(
-                controller: _residenceController,
-                decoration: InputDecoration(labelText: S.of(context).residence),
+              const SizedBox(height: 16),
+              TypeAheadFormField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  controller: _destinationController,
+                  decoration: InputDecoration(
+                    labelText: S.of(context).destinationLocation,
+                    hintText: S.of(context).chooseAddress,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                suggestionsCallback: (pattern) async {
+                  return await commonMethods.getAddresses(_destinationController.text, pattern);
+                },
+                itemBuilder: (context, suggestion) {
+                  return ListTile(
+                    title: Text(suggestion.toString()),
+                  );
+                },
+                onSuggestionSelected: (suggestion) {
+                  _destinationController.text = suggestion.toString();
+                },
               ),
-              TextField(
-                controller: _vehicleController,
-                decoration: InputDecoration(labelText: S.of(context).vehicleInformation),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _vehicleController.text.isEmpty ? null : _vehicleController.text,
+                items: [
+                  DropdownMenuItem(value: '5 seats', child: Text('5 seats')),
+                  DropdownMenuItem(value: 'Up to 5 seats', child: Text('Up to 5 seats')),
+                  DropdownMenuItem(value: 'More than 5 seats', child: Text('More than 5 seats')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _vehicleController.text = value!;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: S.of(context).vehicleInformation,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _signUp,
-                child: Text(S.of(context).signup),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  S.of(context).signup,
+                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
               if (_errorMessage.isNotEmpty)
                 Text(
                   _errorMessage,
                   style: const TextStyle(color: Colors.red),
                 ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(S.of(context).loginPrompt),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(S.of(context).signUpPrompt),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(S.of(context).login, style: TextStyle(color: primaryColor)),
+                  ),
+                ],
               ),
             ],
           ),

@@ -26,15 +26,15 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // Navigate to HomeScreen
       if (context.mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) => HomeScreen(
-                user: userCredential.user,
-                onLocaleChange: widget.onLocaleChange,
-              )),
+            builder: (context) => HomeScreen(
+              user: userCredential.user,
+              onLocaleChange: widget.onLocaleChange,
+            ),
+          ),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -46,45 +46,98 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = const Color(0xFF1C4B93); // Adjusted color from the carpool logo
+
     return Scaffold(
-      appBar: AppBar(title: Text(S.of(context).login)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: S.of(context).email),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: S.of(context).password),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text(S.of(context).login),
-            ),
-            if (_errorMessage.isNotEmpty)
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const SizedBox(height: 50),
               Text(
-                _errorMessage,
-                style: const TextStyle(color: Colors.red),
+                'Login',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => SignUpScreen(
-                        onLocaleChange: widget.onLocaleChange,
-                      )),
-                );
-              },
-              child: Text(S.of(context).signUpPrompt),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Text(
+                'Welcome back!',
+                style: TextStyle(fontSize: 20, color: Colors.grey[700]),
+              ),
+              const SizedBox(height: 30),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Enter Your Username / Email',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Enter Your Password',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: Icon(Icons.visibility_off),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {},
+                  child: Text(
+                    'Forgot Password?',
+                    style: TextStyle(color: primaryColor),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _login,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  S.of(context).login,
+                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+              if (_errorMessage.isNotEmpty)
+                Text(
+                  _errorMessage,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Don’t have an account?"),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SignUpScreen(onLocaleChange: widget.onLocaleChange),
+                        ),
+                      );
+                    },
+                    child: Text('Signup', style: TextStyle(color: primaryColor)),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
