@@ -8,6 +8,7 @@ import 'package:carpool/pages/my_groups_screen.dart';
 import 'package:carpool/pages/my_profile_screen.dart';
 import 'package:carpool/pages/settings_screen.dart';
 import 'package:carpool/generated/l10n.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
   final User? user;
@@ -15,11 +16,27 @@ class HomeScreen extends StatelessWidget {
 
   const HomeScreen({super.key, this.user, required this.onLocaleChange});
 
+  String getGreetingMessage(BuildContext context, String firstName) {
+    final hour = DateTime.now().hour;
+    final S localization = S.of(context);
+
+    if (hour > 5 && hour < 12) {
+      return localization.goodMorning(firstName);
+    }
+    else if (hour > 12 && hour < 17) {
+      return localization.goodAfternoon(firstName);
+    } else if (hour > 17 && hour < 20) {
+      return localization.goodEvening(firstName);
+    } else {
+      return localization.goodNight(firstName);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final FirebaseAuth auth = FirebaseAuth.instance;
     final String firstName = user?.displayName ?? 'User';
-    final greetingMessage = S.of(context).hi(firstName);
+    final greetingMessage = getGreetingMessage(context, firstName);
 
     Future<void> signOut() async {
       await auth.signOut();
@@ -32,11 +49,9 @@ class HomeScreen extends StatelessWidget {
     }
 
     final Color primaryColor = const Color(0xFF1C4B93); // Adjusted color from the carpool logo
-    final Color accentColor = const Color(0xFF36393C);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(greetingMessage, style: TextStyle(color: primaryColor)),
         backgroundColor: Colors.white,
         iconTheme: IconThemeData(color: primaryColor),
       ),
@@ -88,84 +103,46 @@ class HomeScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CreateGroupScreen(onLocaleChange: onLocaleChange)),
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: accentColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            S.of(context).createGroupPrompt,
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            S.of(context).createGroupSubPrompt,
-                            style: TextStyle(color: Colors.white70, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                      const Icon(Icons.group_add, color: Colors.white, size: 50),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              GridView.count(
-                shrinkWrap: true,
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildMenuButton(context, S.of(context).createGroup, Icons.group_add, primaryColor, CreateGroupScreen(onLocaleChange: onLocaleChange)),
-                  _buildMenuButton(context, S.of(context).searchGroup, Icons.search, primaryColor, SearchGroupScreen(onLocaleChange: onLocaleChange)),
-                  _buildMenuButton(context, S.of(context).mySchedule, Icons.schedule, primaryColor, MyScheduleScreen(onLocaleChange: onLocaleChange)),
-                  _buildMenuButton(context, S.of(context).myGroups, Icons.group, primaryColor, MyGroupsScreen(onLocaleChange: onLocaleChange)),
-                ],
-              ),
-              const SizedBox(height: 20),
               Text(
-                S.of(context).lookAround,
-                style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 22),
-              ),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SearchGroupScreen(onLocaleChange: onLocaleChange)),
-                  );
-                },
-                child: Center(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white, width: 2),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/home_screen_bottom.png'), // Path to your image
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
+                greetingMessage,
+                style: TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
+              ),
+              const SizedBox(height: 20),
+              _buildMenuButton(
+                context,
+                S.of(context).createGroup,
+                Icons.group_add,
+                primaryColor,
+                CreateGroupScreen(onLocaleChange: onLocaleChange),
+              ),
+              const SizedBox(height: 16),
+              _buildMenuButton(
+                context,
+                S.of(context).searchGroup,
+                Icons.search,
+                primaryColor,
+                SearchGroupScreen(onLocaleChange: onLocaleChange),
+              ),
+              const SizedBox(height: 16),
+              _buildMenuButton(
+                context,
+                S.of(context).mySchedule,
+                Icons.schedule,
+                primaryColor,
+                MyScheduleScreen(onLocaleChange: onLocaleChange),
+              ),
+              const SizedBox(height: 16),
+              _buildMenuButton(
+                context,
+                S.of(context).myGroups,
+                Icons.group,
+                primaryColor,
+                MyGroupsScreen(onLocaleChange: onLocaleChange),
               ),
             ],
           ),
@@ -183,20 +160,40 @@ class HomeScreen extends StatelessWidget {
         );
       },
       child: Container(
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              spreadRadius: 5,
+              blurRadius: 10,
+              offset: Offset(0, 5),
+            ),
+          ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 50),
-            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: Colors.white, size: 24),
+            ),
+            const SizedBox(width: 16),
             Text(
               title,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
+            Spacer(),
+            Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14),
           ],
         ),
       ),

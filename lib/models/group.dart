@@ -1,49 +1,54 @@
 class Group {
-  String id;
+  final String id;
   final String groupName;
-  final String destinationCity;
   final String destinationAddress;
   final int radius;
-  final List<String> days;
-  final List<String> hours;
   final String creatorId;
+  final int maxUsers;
+  final int currentUsers;
+  final int remainingParticipants;
+  final List<String> participants;
+  final List<Map<String, dynamic>> schedule;
 
   Group({
     required this.id,
     required this.groupName,
-    required this.destinationCity,
     required this.destinationAddress,
     required this.radius,
-    required this.days,
-    required this.hours,
     required this.creatorId,
+    required this.maxUsers,
+    required this.currentUsers,
+    required this.remainingParticipants,
+    required this.participants,
+    required this.schedule,
   });
-
-  factory Group.fromMap(Map<String, dynamic> data, String id) {
-    return Group(
-      id: id,
-      groupName: data['groupName'],
-      destinationCity: data['destinationCity'],
-      destinationAddress: data['destinationAddress'],
-      radius: data['radius'],
-      days: List<String>.from(data['days']),
-      hours: List<String>.from(data['hours']),
-      creatorId: data['creatorId'],
-    );
-  }
 
   Map<String, dynamic> toMap() {
     return {
       'groupName': groupName,
-      'destinationCity': destinationCity,
       'destinationAddress': destinationAddress,
       'radius': radius,
-      'days': days,
-      'hours': hours,
       'creatorId': creatorId,
+      'maxUsers': maxUsers,
+      'currentUsers': currentUsers,
+      'remainingParticipants': remainingParticipants,
+      'participants': participants,
+      'schedule': schedule,
     };
   }
 
-  String get name => groupName;
-  String get description => '$destinationCity, $destinationAddress';
+  factory Group.fromMap(Map<String, dynamic> map) {
+    return Group(
+      id: map['id'] ?? '',
+      groupName: map['groupName'] ?? '',
+      destinationAddress: map['destinationAddress'] ?? '',
+      radius: map['radius']?.toInt() ?? 0,
+      creatorId: map['creatorId'] ?? '',
+      maxUsers: map['maxUsers']?.toInt() ?? 0,
+      currentUsers: map['currentUsers']?.toInt() ?? 0,
+      remainingParticipants: map['remainingParticipants']?.toInt() ?? 0,
+      participants: List<String>.from(map['participants'] ?? []),
+      schedule: List<Map<String, dynamic>>.from(map['schedule'] ?? []),
+    );
+  }
 }

@@ -8,12 +8,11 @@ import 'package:carpool/pages/home_screen.dart';
 import 'package:carpool/pages/my_profile_screen.dart';
 import 'package:carpool/pages/my_schedule_screen.dart';
 import 'package:carpool/pages/create_group_screen.dart';
-import 'package:carpool/pages/join_group_screen.dart';
-import 'package:carpool/pages/notifications_screen.dart';
 import 'package:carpool/pages/search_group_screen.dart';
 import 'package:carpool/pages/my_groups_screen.dart';
 import 'package:carpool/pages/settings_screen.dart';
 import 'package:carpool/pages/map_integration_page.dart';
+import 'package:carpool/pages/search_bar_with_filters_page.dart'; // Add this import
 import 'package:carpool/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -106,12 +105,11 @@ class _MyAppState extends State<MyApp> {
         '/profile': (context) => MyProfileScreen(onLocaleChange: setLocale),
         '/schedule': (context) => MyScheduleScreen(onLocaleChange: setLocale),
         '/createGroup': (context) => CreateGroupScreen(onLocaleChange: setLocale),
-        // '/joinGroup': (context) => JoinGroupScreen(onLocaleChange: setLocale),
-        // '/notifications': (context) => NotificationsScreen(onLocaleChange: setLocale),
         '/searchGroup': (context) => SearchGroupScreen(onLocaleChange: setLocale),
         '/myGroups': (context) => MyGroupsScreen(onLocaleChange: setLocale),
         '/settings': (context) => SettingsScreen(onLocaleChange: setLocale),
         '/map': (context) => MapIntegrationPage(onLocaleChange: setLocale),
+        '/searchWithFilters': (context) => SearchBarWithFiltersPage(onLocaleChange: setLocale), // Add this line
       },
     );
   }

@@ -1,80 +1,215 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carpool/generated/l10n.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:carpool/methods/common_methods.dart';
 
-class MyProfileScreen extends StatelessWidget {
+class MyProfileScreen extends StatefulWidget {
   final void Function(Locale) onLocaleChange;
 
-  const MyProfileScreen({super.key, required this.onLocaleChange});
+  MyProfileScreen({Key? key, required this.onLocaleChange}) : super(key: key);
+
+  @override
+  _MyProfileScreenState createState() => _MyProfileScreenState();
+}
+
+class _MyProfileScreenState extends State<MyProfileScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final CommonMethods commonMethods = CommonMethods();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _departureController = TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
+  final TextEditingController _childrenController = TextEditingController();
+  final TextEditingController _vehicleController = TextEditingController();
+  bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+      setState(() {
+        _firstNameController.text = userData['firstName'] ?? '';
+        _lastNameController.text = userData['lastName'] ?? '';
+        _emailController.text = userData['email'] ?? '';
+        _departureController.text = userData['departureLocation'] ?? '';
+        _destinationController.text = userData['destinationLocation'] ?? '';
+        _childrenController.text = userData['numberOfChildren'].toString() ?? '';
+        _vehicleController.text = userData['vehicleInformation'] ?? '';
+      });
+    }
+  }
+
+  Future<void> _saveUserData() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+        'firstName': _firstNameController.text,
+        'lastName': _lastNameController.text,
+        'email': _emailController.text,
+        'departureLocation': _departureController.text,
+        'destinationLocation': _destinationController.text,
+        'numberOfChildren': int.tryParse(_childrenController.text) ?? 0,
+        'vehicleInformation': _vehicleController.text,
+      });
+
+      setState(() {
+        _isEditing = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = const Color(0xFF1C4B93);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(S.of(context).profile),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        title: Text(S.of(context).myDetails),
+        backgroundColor: primaryColor,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text(
-                S.of(context).profile,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 20),
-              // Example profile details
-              Text(
-                S.of(context).firstName + ': John',
-                style: TextStyle(fontSize: 18),
+              TextField(
+                controller: _firstNameController,
+                enabled: _isEditing,
+                decoration: InputDecoration(
+                  labelText: S.of(context).firstName,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                S.of(context).lastName + ': Doe',
-                style: TextStyle(fontSize: 18),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _lastNameController,
+                enabled: _isEditing,
+                decoration: InputDecoration(
+                  labelText: S.of(context).lastName,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                S.of(context).email + ': john.doe@example.com',
-                style: TextStyle(fontSize: 18),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _emailController,
+                enabled: false, // Email should not be editable
+                decoration: InputDecoration(
+                  labelText: S.of(context).email,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TypeAheadFormField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  controller: _departureController,
+                  enabled: _isEditing,
+                  decoration: InputDecoration(
+                    labelText: S.of(context).departureLocation,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                suggestionsCallback: (pattern) async {
+                  return await commonMethods.getAddresses(_departureController.text, pattern);
+                },
+                itemBuilder: (context, suggestion) {
+                  return ListTile(
+                    title: Text(suggestion.toString()),
+                  );
+                },
+                onSuggestionSelected: (suggestion) {
+                  _departureController.text = suggestion.toString();
+                },
+              ),
+              const SizedBox(height: 16),
+              TypeAheadFormField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  controller: _destinationController,
+                  enabled: _isEditing,
+                  decoration: InputDecoration(
+                    labelText: S.of(context).destinationLocation,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                suggestionsCallback: (pattern) async {
+                  return await commonMethods.getAddresses(_destinationController.text, pattern);
+                },
+                itemBuilder: (context, suggestion) {
+                  return ListTile(
+                    title: Text(suggestion.toString()),
+                  );
+                },
+                onSuggestionSelected: (suggestion) {
+                  _destinationController.text = suggestion.toString();
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _childrenController,
+                enabled: _isEditing,
+                decoration: InputDecoration(
+                  labelText: S.of(context).numberOfChildren,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _vehicleController,
+                enabled: _isEditing,
+                decoration: InputDecoration(
+                  labelText: S.of(context).vehicleInformation,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Example of using onLocaleChange to switch languages
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text(S.of(context).selectLanguage),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ListTile(
-                            title: Text('English'),
-                            onTap: () {
-                              onLocaleChange(Locale('en'));
-                              Navigator.pop(context);
-                            },
-                          ),
-                          ListTile(
-                            title: Text('עברית'),
-                            onTap: () {
-                              onLocaleChange(Locale('he'));
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  if (_isEditing) {
+                    _saveUserData();
+                  } else {
+                    setState(() {
+                      _isEditing = true;
+                    });
+                  }
                 },
-                child: Text(S.of(context).selectLanguage),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  _isEditing ? S.of(context).saveDetails : S.of(context).editDetails,
+                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
             ],
           ),
