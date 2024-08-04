@@ -55,11 +55,11 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
       appBar: AppBar(
         title: Text(
           S.of(context).myGroups,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: primaryColor,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white), // Set the arrow color to white
+          icon: const Icon(Icons.arrow_back, color: Colors.white), // Set the arrow color to white
           onPressed: () => Navigator.of(context).pop(),
         ),
         centerTitle: true,
@@ -68,7 +68,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
         children: [
           Expanded(
             child: _loading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : Padding(
               padding: const EdgeInsets.all(16.0),
               child: ListView.builder(
@@ -87,7 +87,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GroupPage(groupId: group.id),
+                          builder: (context) => GroupPage(groupId: group.id, onLocaleChange: widget.onLocaleChange),
                         ),
                       );
                     },
@@ -99,10 +99,10 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withOpacity(0.08),
                             spreadRadius: 5,
                             blurRadius: 10,
-                            offset: Offset(0, 5),
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -114,7 +114,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
                               color: primaryColor,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(Icons.group, color: Colors.white, size: 24),
+                            child: const Icon(Icons.group, color: Colors.white, size: 24),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -123,7 +123,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
                               children: [
                                 Text(
                                   groupName,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
@@ -132,7 +132,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   destination,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.black54,
                                   ),
@@ -144,7 +144,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
                             isFull ? 'Full' : '$remainingSeats seats left',
                             style: TextStyle(color: isFull ? Colors.red : Colors.green),
                           ),
-                          Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14),
+                          const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14),
                         ],
                       ),
                     ),

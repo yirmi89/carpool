@@ -21,11 +21,11 @@ class _SearchGroupScreenState extends State<SearchGroupScreen> {
       appBar: AppBar(
         title: Text(
           S.of(context).chooseSearchOption,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: primaryColor,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white), // Set the arrow color to white
+          icon: const Icon(Icons.arrow_back, color: Colors.white), // Set the arrow color to white
           onPressed: () => Navigator.of(context).pop(),
         ),
         centerTitle: true,
@@ -71,41 +71,36 @@ class _SearchGroupScreenState extends State<SearchGroupScreen> {
         );
       },
       child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10.0), // Adding margin to separate the buttons
         padding: const EdgeInsets.all(20),
+        width: double.infinity,
+        height: double.infinity, // Fill available space
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withOpacity(0.09),
               spreadRadius: 5,
               blurRadius: 10,
-              offset: Offset(0, 5),
+              offset: const Offset(0, 5),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: Colors.white, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+            Icon(icon, color: color, size: 80),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14),
           ],
         ),
       ),

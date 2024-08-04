@@ -15,6 +15,8 @@ import 'package:carpool/pages/map_integration_page.dart';
 import 'package:carpool/pages/search_bar_with_filters_page.dart'; // Add this import
 import 'package:carpool/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

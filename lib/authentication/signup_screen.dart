@@ -27,11 +27,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String _errorMessage = '';
   bool _isOtherSelected = false;
 
+  bool _validatePassword(String password) {
+    return password.length >= 6 && RegExp(r'^(?=.*[a-zA-Z])(?=.*\d)').hasMatch(password);
+  }
+
   Future<void> _signUp() async {
+    final password = _passwordController.text.trim();
+    final passwordRegExp = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$');
+    if (!passwordRegExp.hasMatch(password)) {
+      setState(() {
+        _errorMessage = S.of(context).passwordRequirementMessage;
+      });
+      return;
+    }
+
     try {
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        password: password,
       );
 
       if (userCredential.user != null) {
@@ -53,7 +66,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => HomeScreen(
-                user: updatedUser,
                 onLocaleChange: widget.onLocaleChange,
               ),
             ),
@@ -61,18 +73,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
         }
       } else {
         setState(() {
-          _errorMessage = 'User creation failed. Please try again.';
+          _errorMessage = S.of(context).userCreationFailed;
         });
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
-        _errorMessage = e.message ?? 'An unknown error occurred';
+        _errorMessage = e.message ?? S.of(context).unknownError;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'An unknown error occurred';
+        _errorMessage = S.of(context).unknownError;
       });
     }
+  }
+
+  void _signInWithGoogle() {
+    // Add your Google Sign-In logic here
+  }
+
+  void _signInWithFacebook() {
+    // Add your Facebook Sign-In logic here
   }
 
   @override
@@ -80,13 +100,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final Color primaryColor = const Color(0xFF1C4B93);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          S.of(context).login,
-          style: TextStyle(color: Colors.white70),
-        ),
-        backgroundColor: primaryColor,
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -95,13 +108,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
             children: <Widget>[
               const SizedBox(height: 50),
               Text(
-                'Signup',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                S.of(context).signupTitle,
+                style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               Text(
-                'Create a new account',
-                style: TextStyle(fontSize: 20, color: Colors.grey[700]),
+                S.of(context).createNewAccount,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey[700]),
               ),
               const SizedBox(height: 30),
               TextField(
@@ -141,7 +154,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  suffixIcon: Icon(Icons.visibility_off),
+                  suffixIcon: const Icon(Icons.visibility_off),
                 ),
                 obscureText: true,
               ),
@@ -149,12 +162,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
               DropdownButtonFormField(
                 value: _childrenController.text.isEmpty ? null : _childrenController.text,
                 items: [
-                  DropdownMenuItem(value: '1', child: Text('1')),
-                  DropdownMenuItem(value: '2', child: Text('2')),
-                  DropdownMenuItem(value: '3', child: Text('3')),
-                  DropdownMenuItem(value: '4', child: Text('4')),
-                  DropdownMenuItem(value: '5', child: Text('5')),
-                  DropdownMenuItem(value: 'other', child: Text('Other')),
+                  const DropdownMenuItem(value: '1', child: Text('1')),
+                  const DropdownMenuItem(value: '2', child: Text('2')),
+                  const DropdownMenuItem(value: '3', child: Text('3')),
+                  const DropdownMenuItem(value: '4', child: Text('4')),
+                  const DropdownMenuItem(value: '5', child: Text('5')),
+                  DropdownMenuItem(value: 'other', child: Text(S.of(context).other)),
                 ],
                 onChanged: (value) {
                   setState(() {
@@ -168,7 +181,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   });
                 },
                 decoration: InputDecoration(
-                  labelText: S.of(context).numberOfChildren,
+                  labelText: S.of(context).numberOfChildrenLabel,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -178,7 +191,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 TextField(
                   controller: _childrenController,
                   decoration: InputDecoration(
-                    labelText: 'Enter Number of Children',
+                    labelText: S.of(context).enterNumberOfChildren,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -221,7 +234,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 child: Text(
                   S.of(context).signup,
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
               if (_errorMessage.isNotEmpty)
@@ -233,14 +246,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Already have an account?"),
+                  Text(S.of(context).alreadyHaveAnAccount),
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: Text('Login', style: TextStyle(color: primaryColor)),
+                    child: Text(S.of(context).loginButton, style: TextStyle(color: primaryColor)),
                   ),
                 ],
+              ),
+              const Divider(),
+              ElevatedButton.icon(
+                onPressed: _signInWithGoogle,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(color: primaryColor),
+                  ),
+                ),
+                icon: Image.asset('assets/images/google_icon.png', height: 24, width: 24),
+                label: Text(S.of(context).signInWithGoogle),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: _signInWithFacebook,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: Image.asset('assets/images/facebook_icon.png', height: 24, width: 24),
+                label: Text(S.of(context).signInWithFacebook),
               ),
             ],
           ),

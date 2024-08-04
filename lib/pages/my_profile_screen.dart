@@ -21,9 +21,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _departureController = TextEditingController();
-  final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _childrenController = TextEditingController();
-  final TextEditingController _vehicleController = TextEditingController();
   bool _isEditing = false;
 
   @override
@@ -43,9 +41,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         _lastNameController.text = userData['lastName'] ?? '';
         _emailController.text = userData['email'] ?? '';
         _departureController.text = userData['departureLocation'] ?? '';
-        _destinationController.text = userData['destinationLocation'] ?? '';
         _childrenController.text = userData['numberOfChildren'].toString() ?? '';
-        _vehicleController.text = userData['vehicleInformation'] ?? '';
       });
     }
   }
@@ -58,9 +54,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         'lastName': _lastNameController.text,
         'email': _emailController.text,
         'departureLocation': _departureController.text,
-        'destinationLocation': _destinationController.text,
         'numberOfChildren': int.tryParse(_childrenController.text) ?? 0,
-        'vehicleInformation': _vehicleController.text,
       });
 
       setState(() {
@@ -142,51 +136,16 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              TypeAheadFormField(
-                textFieldConfiguration: TextFieldConfiguration(
-                  controller: _destinationController,
-                  enabled: _isEditing,
-                  decoration: InputDecoration(
-                    labelText: S.of(context).destinationLocation,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                suggestionsCallback: (pattern) async {
-                  return await commonMethods.getAddresses(_destinationController.text, pattern);
-                },
-                itemBuilder: (context, suggestion) {
-                  return ListTile(
-                    title: Text(suggestion.toString()),
-                  );
-                },
-                onSuggestionSelected: (suggestion) {
-                  _destinationController.text = suggestion.toString();
-                },
-              ),
-              const SizedBox(height: 16),
               TextField(
                 controller: _childrenController,
                 enabled: _isEditing,
                 decoration: InputDecoration(
-                  labelText: S.of(context).numberOfChildren,
+                  labelText: S.of(context).numberOfChildrenLabel,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _vehicleController,
-                enabled: _isEditing,
-                decoration: InputDecoration(
-                  labelText: S.of(context).vehicleInformation,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(

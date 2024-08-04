@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:carpool/generated/l10n.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:carpool/methods/common_methods.dart';
+import 'package:intl/intl.dart';
 import '../models/group.dart';
 import 'package:carpool/pages/home_screen.dart';
 
@@ -23,7 +24,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   final TextEditingController _radiusController = TextEditingController();
   final TextEditingController _maxParticipantsController = TextEditingController();
   final TextEditingController _childrenController = TextEditingController();
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _endDateController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isRoundTrip = false;
 
   @override
   void initState() {
@@ -52,17 +56,22 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       final maxParticipants = int.parse(_maxParticipantsController.text.trim());
       final childrenToAdd = int.parse(_childrenController.text.trim());
       final remainingParticipants = maxParticipants - childrenToAdd;
+      final startDate = DateFormat('dd.MM.yyyy').parse(_startDateController.text.trim());
+      final endDate = DateFormat('dd.MM.yyyy').parse(_endDateController.text.trim());
 
       final user = _auth.currentUser;
       if (user != null) {
-        final initialSchedule = [
-          for (var day in ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
-            {
-              'day': day,
-              'driver': '',
-              'children': [],
-            }
-        ];
+        final List<Map<String, dynamic>> initialSchedule = [];
+        DateTime currentDate = startDate;
+        while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
+          initialSchedule.add({
+            'date': DateFormat('EEEE-dd.MM.yyyy').format(currentDate),
+            'driverGoing': '',
+            'driverReturning': '',
+            'children': [],
+          });
+          currentDate = currentDate.add(Duration(days: 1));
+        }
 
         final group = Group(
           id: '',
@@ -75,6 +84,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           remainingParticipants: remainingParticipants,
           participants: [user.uid],
           schedule: initialSchedule,
+          startDate: startDate,
+          endDate: endDate,
+          roundTrip: _isRoundTrip,
         );
 
         final docRef = await FirebaseFirestore.instance.collection('groups').add(group.toMap());
@@ -91,6 +103,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         _radiusController.clear();
         _maxParticipantsController.clear();
         _childrenController.clear();
+        _startDateController.clear();
+        _endDateController.clear();
 
         showDialog(
           context: context,
@@ -241,6 +255,78 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                         return 'Please enter the number of children';
                       }
                       return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _startDateController,
+                    decoration: InputDecoration(
+                      labelText: S.of(context).startDate,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    keyboardType: TextInputType.datetime,
+                    onTap: () async {
+                      FocusScope.of(context).requestFocus(new FocusNode());
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now().subtract(Duration(days: 365)),
+                        lastDate: DateTime.now().add(Duration(days: 365)),
+                      );
+                      if (pickedDate != null) {
+                        setState(() {
+                          _startDateController.text = DateFormat('dd.MM.yyyy').format(pickedDate);
+                        });
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a start date';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _endDateController,
+                    decoration: InputDecoration(
+                      labelText: S.of(context).endDate,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    keyboardType: TextInputType.datetime,
+                    onTap: () async {
+                      FocusScope.of(context).requestFocus(new FocusNode());
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now().subtract(Duration(days: 365)),
+                        lastDate: DateTime.now().add(Duration(days: 365)),
+                      );
+                      if (pickedDate != null) {
+                        setState(() {
+                          _endDateController.text = DateFormat('dd.MM.yyyy').format(pickedDate);
+                        });
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an end date';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CheckboxListTile(
+                    title: Text(S.of(context).roundTrip),
+                    value: _isRoundTrip,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _isRoundTrip = newValue!;
+                      });
                     },
                   ),
                   const SizedBox(height: 16),

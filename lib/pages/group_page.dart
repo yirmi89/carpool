@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:carpool/generated/l10n.dart';
-import 'group_chat_screen.dart';
-import 'travel_planning_screen.dart';
+import 'package:carpool/pages/travel_planning_screen.dart';
+import 'package:carpool/pages/chat_screen.dart';
+import 'package:carpool/pages/home_screen.dart';
 
 class GroupPage extends StatefulWidget {
   final String groupId;
+  final void Function(Locale) onLocaleChange;
 
-  GroupPage({Key? key, required this.groupId}) : super(key: key);
+  GroupPage({Key? key, required this.groupId, required this.onLocaleChange}) : super(key: key);
 
   @override
   _GroupPageState createState() => _GroupPageState();
@@ -37,8 +39,87 @@ class _GroupPageState extends State<GroupPage> {
         participantsCount = participantIds.length;
         _loading = false;
       });
-      // Debug statement to print the participant IDs fetched from Firestore
       print("Participant IDs: $participantIds");
+    }
+  }
+
+  Future<void> _leaveGroup() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final int childrenCount = userData['numberOfChildren'] ?? 0;
+
+        // Remove user from group's participants
+        await FirebaseFirestore.instance.collection('groups').doc(widget.groupId).update({
+          'participants': FieldValue.arrayRemove([user.uid])
+        });
+
+        // Remove group from user's list
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+          'groups': FieldValue.arrayRemove([widget.groupId])
+        });
+
+        // Update the number of places left in the group
+        await FirebaseFirestore.instance.collection('groups').doc(widget.groupId).update({
+          'placesLeft': FieldValue.increment(childrenCount)
+        });
+
+        // Remove related rides from user's schedule
+        final userScheduleRef = FirebaseFirestore.instance.collection('schedules').doc(user.uid);
+        final userScheduleDoc = await userScheduleRef.get();
+        if (userScheduleDoc.exists) {
+          final userScheduleData = userScheduleDoc.data() as Map<String, dynamic>;
+          final updatedSchedule = userScheduleData['schedule'].where((ride) => ride['groupId'] != widget.groupId).toList();
+          await userScheduleRef.update({'schedule': updatedSchedule});
+        }
+
+        // Send a message to the group chat
+        await FirebaseFirestore.instance
+            .collection('groups')
+            .doc(widget.groupId)
+            .collection('messages')
+            .add({
+          'senderId': user.uid,
+          'senderName': user.displayName ?? 'Anonymous',
+          'text': S.of(context).leaveGroupDetailedMessage(_groupName),
+          'timestamp': Timestamp.now(),
+        });
+
+        // Send a notification
+        await FirebaseFirestore.instance.collection('notifications').add({
+          'groupId': widget.groupId,
+          'message': S.of(context).leaveGroupNotification(user.displayName ?? 'Anonymous', _groupName),
+          'timestamp': Timestamp.now(),
+        });
+
+        setState(() {
+          participantIds.remove(user.uid);
+          participantsCount--;
+        });
+
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(S.of(context).leaveGroupMessage(_groupName)),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomeScreen(onLocaleChange: widget.onLocaleChange)),
+                          (route) => false,
+                    );
+                  },
+                  child: Text(S.of(context).returnToHomeScreen),
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
   }
 
@@ -50,23 +131,23 @@ class _GroupPageState extends State<GroupPage> {
       appBar: AppBar(
         backgroundColor: primaryColor,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: _loading ? Text('') : Text(_groupName, style: TextStyle(color: Colors.white)),
+        title: _loading ? const Text('') : Text(_groupName, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
         child: Column(
           children: [
             Container(
               color: primaryColor,
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -78,7 +159,7 @@ class _GroupPageState extends State<GroupPage> {
                             children: [
                               Text(
                                 participantsCount.toString().padLeft(2, '0'),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -87,7 +168,7 @@ class _GroupPageState extends State<GroupPage> {
                               ),
                               Text(
                                 S.of(context).participants,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.white70,
                                   decoration: TextDecoration.underline,
@@ -107,7 +188,7 @@ class _GroupPageState extends State<GroupPage> {
               child: GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
                 children: [
@@ -121,8 +202,13 @@ class _GroupPageState extends State<GroupPage> {
                   }),
                   _buildGridButton(Icons.chat, S.of(context).groupChat, _showGroupChat),
                   _buildGridButton(Icons.location_on, S.of(context).showRideLiveLocation, () {}),
-                  _buildGridButton(Icons.exit_to_app, S.of(context).leaveThisRideGroup, _leaveGroup),
-                  _buildGridButton(Icons.cancel, S.of(context).cancelRide, () {}),
+                  _buildGridButton(
+                    Icons.exit_to_app,
+                    S.of(context).leaveThisRideGroup,
+                    _confirmLeaveGroup,
+                    textColor: Colors.red,
+                    iconColor: Colors.red,
+                  ),
                 ],
               ),
             ),
@@ -132,7 +218,8 @@ class _GroupPageState extends State<GroupPage> {
     );
   }
 
-  Widget _buildGridButton(IconData icon, String label, VoidCallback onPressed) {
+  Widget _buildGridButton(IconData icon, String label, VoidCallback onPressed,
+      {Color textColor = const Color(0xFF1C4B93), Color iconColor = const Color(0xFF1C4B93)}) {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
@@ -144,16 +231,16 @@ class _GroupPageState extends State<GroupPage> {
               color: Colors.grey.withOpacity(0.3),
               spreadRadius: 2,
               blurRadius: 5,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 50, color: const Color(0xFF1C4B93)),
-            SizedBox(height: 10),
-            Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: const Color(0xFF1C4B93))),
+            Icon(icon, size: 50, color: iconColor),
+            const SizedBox(height: 10),
+            Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: textColor)),
           ],
         ),
       ),
@@ -170,7 +257,7 @@ class _GroupPageState extends State<GroupPage> {
             children: [
               Text(S.of(context).participants),
               IconButton(
-                icon: Icon(Icons.close),
+                icon: const Icon(Icons.close),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -183,7 +270,7 @@ class _GroupPageState extends State<GroupPage> {
               future: _getParticipantFirstNames(participantIds),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
                   return Text(S.of(context).somethingWentWrong);
                 } else if (snapshot.hasData && snapshot.data!.isEmpty) {
@@ -213,7 +300,6 @@ class _GroupPageState extends State<GroupPage> {
       final userDoc = await FirebaseFirestore.instance.collection('users').doc(id).get();
       if (userDoc.exists) {
         final data = userDoc.data() as Map<String, dynamic>;
-        // Debug statement to print user data for each participant ID
         print("User Data for $id: $data");
         firstNames.add(data['firstName'] ?? 'Unknown');
       }
@@ -230,7 +316,51 @@ class _GroupPageState extends State<GroupPage> {
     );
   }
 
-  void _leaveGroup() {
-    // Implement the leave group feature
+  void _confirmLeaveGroup() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(S.of(context).confirmLeaveGroup),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(S.of(context).no),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showLeaveGroupConfirmation();
+              },
+              child: Text(S.of(context).yes),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLeaveGroupConfirmation() {
+    _leaveGroup();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(S.of(context).leaveGroupMessage(_groupName)),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen(onLocaleChange: widget.onLocaleChange)),
+                      (route) => false,
+                );
+              },
+              child: Text(S.of(context).returnToHomeScreen),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

@@ -52,7 +52,7 @@ class _MapIntegrationPageState extends State<MapIntegrationPage> {
         // Here, you can convert the destinationAddress to LatLng if you have geocoding service
 
         // For demonstration, assuming fixed LatLng values
-        final latLng = LatLng(37.7749, -122.4194); // replace with actual coordinates
+        final latLng = const LatLng(37.7749, -122.4194); // replace with actual coordinates
 
         _markers.add(
           Marker(
@@ -94,7 +94,7 @@ class _MapIntegrationPageState extends State<MapIntegrationPage> {
       // Convert destinationAddress to LatLng if you have geocoding service
 
       // For demonstration, assuming fixed LatLng values
-      final latLng = LatLng(37.7749, -122.4194); // replace with actual coordinates
+      final latLng = const LatLng(37.7749, -122.4194); // replace with actual coordinates
 
       _mapController.animateCamera(
         CameraUpdate.newCameraPosition(
@@ -145,7 +145,7 @@ class _MapIntegrationPageState extends State<MapIntegrationPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: primaryColor,
@@ -156,7 +156,7 @@ class _MapIntegrationPageState extends State<MapIntegrationPage> {
             onMapCreated: (controller) {
               _mapController = controller;
             },
-            initialCameraPosition: CameraPosition(
+            initialCameraPosition: const CameraPosition(
               target: LatLng(37.7749, -122.4194), // San Francisco coordinates
               zoom: 10,
             ),
@@ -194,7 +194,7 @@ class _MapIntegrationPageState extends State<MapIntegrationPage> {
                     // You can implement moving to this location on the map if you have coordinates
                   },
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 TextField(
                   controller: _groupNameController,
                   decoration: InputDecoration(
@@ -218,7 +218,7 @@ class _MapIntegrationPageState extends State<MapIntegrationPage> {
             child: FloatingActionButton(
               onPressed: _goToCurrentLocation,
               backgroundColor: primaryColor,
-              child: Icon(Icons.my_location),
+              child: const Icon(Icons.my_location),
             ),
           ),
         ],

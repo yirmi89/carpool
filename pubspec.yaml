@@ -28,6 +28,8 @@ dependencies:
   cloud_firestore: ^4.7.3
   shared_preferences: ^2.0.6
   geocoding: ^3.0.0
+  google_sign_in: ^6.0.0
+  flutter_facebook_auth: ^4.3.3
 
 
 dev_dependencies:
@@ -42,3 +44,5 @@ flutter:
   assets:
     - assets/images/carpool_logo.png
     - assets/images/home_screen_bottom.png
+    - assets/images/google_icon.png
+    - assets/images/facebook_icon.png

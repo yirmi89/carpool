@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:carpool/generated/l10n.dart';
+import 'package:intl/intl.dart';
 
 class TravelPlanningScreen extends StatefulWidget {
   final String groupId;
@@ -14,11 +16,16 @@ class TravelPlanningScreen extends StatefulWidget {
 class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
   List<Map<String, dynamic>> schedule = [];
   bool isLoading = true;
+  bool isRoundTrip = false;
+  String userFirstName = '';
+  String userAddress = '';
+  int userChildren = 1;
 
   @override
   void initState() {
     super.initState();
     _fetchSchedule();
+    _fetchUserData();
   }
 
   Future<void> _fetchSchedule() async {
@@ -26,20 +33,42 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
     if (groupDoc.exists) {
       setState(() {
         schedule = List<Map<String, dynamic>>.from(groupDoc['schedule']);
+        isRoundTrip = groupDoc['roundTrip'] ?? false;
         isLoading = false;
       });
     }
   }
 
+  Future<void> _fetchUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        setState(() {
+          final userData = userDoc.data() as Map<String, dynamic>;
+          userFirstName = userData['firstName'] ?? 'Unknown';
+          userAddress = userData['departureLocation'] ?? '';
+          userChildren = userData['children'] ?? 1;
+        });
+      }
+    }
+  }
+
   Future<void> _updateSchedule() async {
-    await FirebaseFirestore.instance.collection('groups').doc(widget.groupId).update({
+    await FirebaseFirestore.instance.collection('groups')
+        .doc(widget.groupId)
+        .update({
       'schedule': schedule,
     });
   }
 
-  void _signUpAsDriver(int index, String driverName) {
+  void _signUpAsDriver(int index, String driverName, {required bool isReturning}) {
     setState(() {
-      schedule[index]['driver'] = driverName;
+      if (isReturning) {
+        schedule[index]['driverReturning'] = driverName;
+      } else {
+        schedule[index]['driverGoing'] = driverName;
+      }
     });
     _updateSchedule();
   }
@@ -60,11 +89,9 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Travel Planning'),
+        title: Text(S.of(context).travelPlanning),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -74,10 +101,12 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
         child: Column(
-          children: daysOfWeek.asMap().entries.map((entry) {
+          children: schedule
+              .asMap()
+              .entries
+              .map((entry) {
             final index = entry.key;
-            final day = entry.value;
-            final daySchedule = schedule.length > index ? schedule[index] : {'driver': '', 'children': []};
+            final daySchedule = entry.value;
 
             return Padding(
               padding: const EdgeInsets.all(8.0),
@@ -93,7 +122,7 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$day',
+                        daySchedule['date'],
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -105,17 +134,9 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ElevatedButton(
-                            onPressed: daySchedule['driver'].isEmpty
+                            onPressed: daySchedule['driverGoing'].isEmpty
                                 ? () async {
-                              final user = FirebaseAuth.instance.currentUser;
-                              if (user != null) {
-                                final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-                                if (userDoc.exists) {
-                                  final userData = userDoc.data() as Map<String, dynamic>;
-                                  final firstName = userData['firstName'] ?? 'Unknown';
-                                  _signUpAsDriver(index, firstName);
-                                }
-                              }
+                              _signUpAsDriver(index, userFirstName, isReturning: false);
                             }
                                 : null,
                             style: ElevatedButton.styleFrom(
@@ -124,36 +145,47 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: Text(daySchedule['driver'].isEmpty ? 'Be the Driver' : 'Driver Assigned'),
+                            child: Text(daySchedule['driverGoing'].isEmpty ? S.of(context).driveGoing : S.of(context).driverGoing(daySchedule['driverGoing'])),
                           ),
-                          ElevatedButton(
-                            onPressed: () async {
-                              final user = FirebaseAuth.instance.currentUser;
-                              if (user != null) {
-                                final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-                                if (userDoc.exists) {
-                                  final userData = userDoc.data() as Map<String, dynamic>;
-                                  final firstName = userData['firstName'] ?? 'Unknown';
-                                  final numberOfChildren = userData['numberOfChildren'] ?? 0;
-                                  final address = userData['departureLocation'] ?? 'Unknown';
-                                  _addChildren(index, firstName, numberOfChildren, address);
-                                }
+                          if (isRoundTrip)
+                            ElevatedButton(
+                              onPressed: daySchedule['driverReturning'].isEmpty
+                                  ? () async {
+                                _signUpAsDriver(index, userFirstName, isReturning: true);
                               }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
+                              child: Text(daySchedule['driverReturning'].isEmpty ? S.of(context).driveReturning : S.of(context).driverReturning(daySchedule['driverReturning'])),
                             ),
-                            child: Text('Add Your Children'),
-                          ),
                         ],
                       ),
                       SizedBox(height: 10),
                       Text(
-                        'Driver: ${daySchedule['driver']}',
+                        S.of(context).driverGoing(daySchedule['driverGoing']),
                         style: TextStyle(fontSize: 18, color: Colors.black87),
+                      ),
+                      if (isRoundTrip)
+                        Text(
+                          S.of(context).driverReturning(daySchedule['driverReturning']),
+                          style: TextStyle(fontSize: 18, color: Colors.black87),
+                        ),
+                      SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          _addChildrenDialog(index);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(S.of(context).addYourChildren),
                       ),
                       SizedBox(height: 10),
                       GestureDetector(
@@ -173,11 +205,11 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
                                     return Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('Parent: ${child['parent']}'),
+                                        Text(S.of(context).parent(child['parent'])),
                                         SizedBox(height: 8),
-                                        Text('Number of Children: ${child['numberOfChildren']}'),
+                                        Text(S.of(context).numberOfChildrenCount(child['numberOfChildren'])),
                                         SizedBox(height: 8),
-                                        Text('From: ${child['from']}'),
+                                        Text(S.of(context).from(child['from'].toString())), // Fixed here
                                         Divider(),
                                       ],
                                     );
@@ -186,7 +218,7 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.of(context).pop(),
-                                    child: Text('Close'),
+                                    child: Text(S.of(context).close),
                                   ),
                                 ],
                               );
@@ -194,7 +226,7 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
                           );
                         },
                         child: Text(
-                          'View Travel Details',
+                          S.of(context).viewTravelDetails,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.blue,
@@ -210,6 +242,76 @@ class _TravelPlanningScreenState extends State<TravelPlanningScreen> {
           }).toList(),
         ),
       ),
+    );
+  }
+
+  void _addChildrenDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final TextEditingController numberOfChildrenController = TextEditingController(text: userChildren.toString());
+        final TextEditingController addressController = TextEditingController(text: userAddress);
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          title: Text(S.of(context).addYourChildren),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                enabled: false,
+                decoration: InputDecoration(
+                  labelText: userFirstName,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: numberOfChildrenController,
+                decoration: InputDecoration(
+                  labelText: S.of(context).numberOfChildren,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: addressController,
+                decoration: InputDecoration(
+                  labelText: S.of(context).fromLabel,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(S.of(context).close),
+            ),
+            TextButton(
+              onPressed: () {
+                _addChildren(
+                  index,
+                  userFirstName,
+                  int.parse(numberOfChildrenController.text.trim()),
+                  addressController.text.trim(),
+                );
+                Navigator.of(context).pop();
+              },
+              child: Text(S.of(context).add),
+            ),
+          ],
+        );
+      },
     );
   }
 }
